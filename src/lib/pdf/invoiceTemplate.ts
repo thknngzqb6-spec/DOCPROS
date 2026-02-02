@@ -1,0 +1,216 @@
+import type { TDocumentDefinitions } from "pdfmake/interfaces";
+import type { InvoiceWithLines } from "../../types/invoice";
+import { formatDate } from "../utils/formatDate";
+import { groupVatByRate } from "../utils/calculations";
+
+export function buildInvoicePdf(invoice: InvoiceWithLines): TDocumentDefinitions {
+  const vatBreakdown = groupVatByRate(invoice.lines);
+  const fmt = (n: number) =>
+    n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const legalFooter: string[] = [];
+  legalFooter.push(
+    `Conditions de paiement : ${invoice.paymentTermsDays} jours. Echeance : ${formatDate(invoice.dueDate)}.`
+  );
+  legalFooter.push(invoice.latePenaltyText);
+  if (invoice.buyerIsProfessional) {
+    legalFooter.push(invoice.recoveryCostsText);
+  }
+
+  return {
+    content: [
+      // Seller info
+      {
+        columns: [
+          {
+            width: "*",
+            stack: [
+              { text: invoice.sellerName, style: "sellerName" },
+              { text: `SIRET : ${invoice.sellerSiret}`, style: "sellerInfo" },
+              { text: invoice.sellerAddress, style: "sellerInfo" },
+              invoice.sellerVatNumber
+                ? { text: `TVA : ${invoice.sellerVatNumber}`, style: "sellerInfo" }
+                : "",
+            ],
+          },
+          {
+            width: "auto",
+            stack: [
+              { text: "FACTURE", style: "docTitle" },
+              { text: invoice.invoiceNumber, style: "docNumber" },
+            ],
+            alignment: "right" as const,
+          },
+        ],
+      },
+      { text: "", margin: [0, 20, 0, 0] as [number, number, number, number] },
+
+      // Dates + Buyer
+      {
+        columns: [
+          {
+            width: "*",
+            stack: [
+              { text: `Date d'emission : ${formatDate(invoice.issueDate)}`, fontSize: 9 },
+              invoice.serviceDate
+                ? { text: `Date de prestation : ${formatDate(invoice.serviceDate)}`, fontSize: 9 }
+                : "",
+              { text: `Echeance : ${formatDate(invoice.dueDate)}`, fontSize: 9 },
+            ],
+          },
+          {
+            width: 200,
+            stack: [
+              { text: "Destinataire", style: "sectionLabel" },
+              { text: invoice.buyerName, bold: true, fontSize: 10 },
+              { text: invoice.buyerAddress, fontSize: 9 },
+              invoice.buyerSiret
+                ? { text: `SIRET : ${invoice.buyerSiret}`, fontSize: 9 }
+                : "",
+            ],
+            margin: [0, 0, 0, 0] as [number, number, number, number],
+          },
+        ],
+      },
+      { text: "", margin: [0, 20, 0, 0] as [number, number, number, number] },
+
+      // Lines table
+      {
+        table: {
+          headerRows: 1,
+          widths: ["*", 40, 50, 70, 40, 70],
+          body: [
+            [
+              { text: "Description", style: "tableHeader" },
+              { text: "Qte", style: "tableHeader" },
+              { text: "Unite", style: "tableHeader" },
+              { text: "P.U. HT", style: "tableHeader", alignment: "right" as const },
+              { text: "TVA", style: "tableHeader", alignment: "right" as const },
+              { text: "Total HT", style: "tableHeader", alignment: "right" as const },
+            ],
+            ...invoice.lines.map((l) => [
+              { text: l.description, fontSize: 9 },
+              { text: String(l.quantity), fontSize: 9 },
+              { text: l.unit, fontSize: 9 },
+              { text: `${fmt(l.unitPriceHt)} EUR`, fontSize: 9, alignment: "right" as const },
+              { text: `${l.vatRate}%`, fontSize: 9, alignment: "right" as const },
+              { text: `${fmt(l.totalHt)} EUR`, fontSize: 9, alignment: "right" as const },
+            ]),
+          ],
+        },
+        layout: {
+          hLineWidth: (i: number, node: { table: { body: unknown[] } }) =>
+            i === 0 || i === 1 || i === node.table.body.length ? 1 : 0.5,
+          vLineWidth: () => 0,
+          hLineColor: () => "#e5e7eb",
+          paddingTop: () => 6,
+          paddingBottom: () => 6,
+        },
+      },
+      { text: "", margin: [0, 15, 0, 0] as [number, number, number, number] },
+
+      // Totals
+      {
+        columns: [
+          { width: "*", text: "" },
+          {
+            width: 220,
+            table: {
+              widths: ["*", 90],
+              body: [
+                [
+                  { text: "Total HT", fontSize: 10 },
+                  { text: `${fmt(invoice.totalHt)} EUR`, fontSize: 10, alignment: "right" as const },
+                ],
+                ...(invoice.vatExempt
+                  ? []
+                  : vatBreakdown.map((v) => [
+                      { text: `TVA ${v.rate}%`, fontSize: 9, color: "#6b7280" },
+                      { text: `${fmt(v.vatAmount)} EUR`, fontSize: 9, alignment: "right" as const, color: "#6b7280" },
+                    ])),
+                ...(invoice.vatExempt
+                  ? []
+                  : [
+                      [
+                        { text: "Total TVA", fontSize: 10 },
+                        { text: `${fmt(invoice.totalVat)} EUR`, fontSize: 10, alignment: "right" as const },
+                      ],
+                    ]),
+                [
+                  { text: "Total TTC", fontSize: 12, bold: true },
+                  {
+                    text: `${fmt(invoice.totalTtc)} EUR`,
+                    fontSize: 12,
+                    bold: true,
+                    alignment: "right" as const,
+                  },
+                ],
+              ],
+            },
+            layout: {
+              hLineWidth: (i: number, node: { table: { body: unknown[] } }) =>
+                i === node.table.body.length - 1 || i === node.table.body.length ? 1 : 0,
+              vLineWidth: () => 0,
+              hLineColor: () => "#d1d5db",
+              paddingTop: () => 4,
+              paddingBottom: () => 4,
+            },
+          },
+        ],
+      },
+
+      // VAT exemption notice
+      ...(invoice.vatExempt && invoice.vatExemptionText
+        ? [
+            {
+              text: invoice.vatExemptionText,
+              fontSize: 8,
+              italics: true,
+              color: "#6b7280",
+              margin: [0, 10, 0, 0] as [number, number, number, number],
+            },
+          ]
+        : []),
+
+      // Notes
+      ...(invoice.notes
+        ? [
+            { text: "", margin: [0, 15, 0, 0] as [number, number, number, number] },
+            { text: "Notes", style: "sectionLabel" },
+            { text: invoice.notes, fontSize: 9 },
+          ]
+        : []),
+
+      // Legal footer
+      { text: "", margin: [0, 30, 0, 0] as [number, number, number, number] },
+      {
+        stack: legalFooter.map((t) => ({
+          text: t,
+          fontSize: 7,
+          color: "#9ca3af",
+          margin: [0, 1, 0, 1] as [number, number, number, number],
+        })),
+      },
+    ],
+    styles: {
+      sellerName: { fontSize: 14, bold: true, color: "#1e40af" },
+      sellerInfo: { fontSize: 9, color: "#4b5563" },
+      docTitle: { fontSize: 22, bold: true, color: "#1e40af" },
+      docNumber: { fontSize: 12, color: "#4b5563" },
+      sectionLabel: {
+        fontSize: 8,
+        bold: true,
+        color: "#6b7280",
+        margin: [0, 0, 0, 4] as [number, number, number, number],
+      },
+      tableHeader: {
+        fontSize: 9,
+        bold: true,
+        color: "#374151",
+        fillColor: "#f9fafb",
+      },
+    },
+    defaultStyle: { font: "Roboto" },
+    pageMargins: [40, 40, 40, 40] as [number, number, number, number],
+  };
+}
