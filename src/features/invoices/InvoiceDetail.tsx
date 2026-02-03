@@ -28,9 +28,9 @@ const statusConfig: Record<
   { label: string; variant: "default" | "success" | "warning" | "danger" | "info" }
 > = {
   draft: { label: "Brouillon", variant: "default" },
-  sent: { label: "Envoyee", variant: "info" },
-  paid: { label: "Payee", variant: "success" },
-  cancelled: { label: "Annulee", variant: "danger" },
+  sent: { label: "Envoyée", variant: "info" },
+  paid: { label: "Payée", variant: "success" },
+  cancelled: { label: "Annulée", variant: "danger" },
 };
 
 export function InvoiceDetail() {
@@ -123,7 +123,7 @@ export function InvoiceDetail() {
         {invoice.status === "sent" && (
           <Button variant="secondary" size="sm" onClick={handleMarkPaid}>
             <CheckCircle size={16} className="mr-2" />
-            Marquer payee
+            Marquer payée
           </Button>
         )}
         {(invoice.status === "sent" || invoice.status === "draft") && (
@@ -136,7 +136,7 @@ export function InvoiceDetail() {
 
       {isFinalized && (
         <div className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-          Cette facture est finalisee et ne peut plus etre modifiee.
+          Cette facture est finalisée et ne peut plus être modifiée.
         </div>
       )}
 
@@ -168,7 +168,7 @@ export function InvoiceDetail() {
             <tr className="border-b border-gray-200 text-left text-sm text-gray-500">
               <th className="pb-3 font-medium">Description</th>
               <th className="pb-3 font-medium">Qte</th>
-              <th className="pb-3 font-medium">Unite</th>
+              <th className="pb-3 font-medium">Unité</th>
               <th className="pb-3 font-medium text-right">P.U. HT</th>
               <th className="pb-3 font-medium text-right">TVA</th>
               <th className="pb-3 font-medium text-right">Total HT</th>
@@ -226,11 +226,11 @@ export function InvoiceDetail() {
         </Card>
       )}
 
-      <Card title="Mentions legales">
+      <Card title="Mentions légales">
         <div className="space-y-2 text-xs text-gray-500">
           <p>
             Conditions de paiement : {invoice.paymentTermsDays} jours.
-            Echeance : {formatDate(invoice.dueDate)}.
+            Échéance : {formatDate(invoice.dueDate)}.
           </p>
           <p>{invoice.latePenaltyText}</p>
           {invoice.buyerIsProfessional && <p>{invoice.recoveryCostsText}</p>}
@@ -243,8 +243,8 @@ export function InvoiceDetail() {
         title="Finaliser la facture"
       >
         <p className="text-sm text-gray-600">
-          Une fois finalisee, la facture ne pourra plus etre modifiee. Son
-          statut passera a "Envoyee". Cette action est irreversible.
+          Une fois finalisée, la facture ne pourra plus être modifiée. Son
+          statut passera à "Envoyée". Cette action est irréversible.
         </p>
         <div className="mt-6 flex justify-end gap-3">
           <Button

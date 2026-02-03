@@ -33,7 +33,7 @@ interface LineDraft {
 }
 
 const UNIT_OPTIONS = [
-  { value: "unite", label: "Unite" },
+  { value: "unite", label: "Unité" },
   { value: "heure", label: "Heure" },
   { value: "jour", label: "Jour" },
   { value: "forfait", label: "Forfait" },
@@ -146,7 +146,7 @@ export function InvoiceForm() {
       [client.firstName, client.lastName].filter(Boolean).join(" ");
     const buyerAddress = `${client.address}, ${client.postalCode} ${client.city}`;
 
-    const latePenaltyText = `En cas de retard de paiement, une penalite de ${settings.defaultLatePenaltyRate}% sera appliquee, conformement a l'article L.441-10 du Code de commerce.`;
+    const latePenaltyText = `En cas de retard de paiement, une pénalité de ${settings.defaultLatePenaltyRate}% sera appliquée, conformément à l'article L.441-10 du Code de commerce.`;
 
     const input: InvoiceInput = {
       invoiceNumber,
@@ -173,7 +173,7 @@ export function InvoiceForm() {
       latePenaltyRate: settings.defaultLatePenaltyRate,
       latePenaltyText,
       recoveryCostsText:
-        "Indemnite forfaitaire pour frais de recouvrement : 40 EUR",
+        "Indemnité forfaitaire pour frais de recouvrement : 40 EUR",
       notes: notes || null,
       lines: computedLines.map((l, i) => ({
         description: l.description,
@@ -207,10 +207,10 @@ export function InvoiceForm() {
         {isEdit ? "Modifier la facture" : "Nouvelle facture"}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Card title="Informations generales">
+        <Card title="Informations générales">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Input
-              label="Numero"
+              label="Numéro"
               value={invoiceNumber}
               readOnly
               className="bg-gray-50"
@@ -220,7 +220,7 @@ export function InvoiceForm() {
               value={String(clientId)}
               onChange={(e) => setClientId(Number(e.target.value))}
               options={[
-                { value: "", label: "Selectionner..." },
+                { value: "", label: "Sélectionner..." },
                 ...clients.map((c) => ({
                   value: String(c.id),
                   label:
@@ -230,7 +230,7 @@ export function InvoiceForm() {
               ]}
             />
             <Input
-              label="Date d'emission"
+              label="Date d'émission"
               type="date"
               value={issueDate}
               onChange={(e) => setIssueDate(e.target.value)}
@@ -242,14 +242,14 @@ export function InvoiceForm() {
               onChange={(e) => setServiceDate(e.target.value)}
             />
             <Input
-              label="Delai de paiement (jours)"
+              label="Délai de paiement (jours)"
               type="number"
               value={paymentTermsDays}
               onChange={(e) =>
                 setPaymentTermsDays(parseInt(e.target.value, 10) || 0)
               }
             />
-            <Input label="Echeance" value={dueDate} readOnly className="bg-gray-50" />
+            <Input label="Échéance" value={dueDate} readOnly className="bg-gray-50" />
           </div>
         </Card>
 
@@ -258,7 +258,7 @@ export function InvoiceForm() {
             <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500">
               <div className="col-span-4">Description</div>
               <div className="col-span-1">Qte</div>
-              <div className="col-span-2">Unite</div>
+              <div className="col-span-2">Unité</div>
               <div className="col-span-2">Prix HT</div>
               <div className="col-span-2">TVA</div>
               <div className="col-span-1"></div>
@@ -421,7 +421,7 @@ export function InvoiceForm() {
               ? "Enregistrement..."
               : isEdit
                 ? "Modifier"
-                : "Creer la facture"}
+                : "Créer la facture"}
           </Button>
         </div>
       </form>

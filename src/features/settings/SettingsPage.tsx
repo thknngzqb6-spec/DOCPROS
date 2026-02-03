@@ -94,9 +94,9 @@ export function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Parametres</h2>
+      <h2 className="text-2xl font-bold text-gray-900">Paramètres</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <Card title="Identite de l'entreprise">
+        <Card title="Identité de l'entreprise">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
               label="Nom commercial"
@@ -108,13 +108,13 @@ export function SettingsPage() {
               {...register("siret", {
                 required: "Requis",
                 validate: (v) =>
-                  isValidSiret(v) || "Numero SIRET invalide",
+                  isValidSiret(v) || "Numéro SIRET invalide",
               })}
               error={errors.siret?.message}
               placeholder="14 chiffres"
             />
             <Input
-              label="Prenom"
+              label="Prénom"
               {...register("firstName", { required: "Requis" })}
               error={errors.firstName?.message}
             />
@@ -144,29 +144,29 @@ export function SettingsPage() {
               error={errors.city?.message}
             />
             <Input label="Email" type="email" {...register("email")} />
-            <Input label="Telephone" {...register("phone")} />
+            <Input label="Téléphone" {...register("phone")} />
           </div>
         </Card>
 
         <Card title="TVA">
           <div className="space-y-4">
             <Select
-              label="Regime de TVA"
+              label="Régime de TVA"
               options={[
                 { value: "1", label: "Franchise de TVA (micro-entrepreneur)" },
-                { value: "0", label: "Assujetti a la TVA" },
+                { value: "0", label: "Assujetti à la TVA" },
               ]}
               {...register("isVatExempt")}
             />
             {isVatExempt === "1" && (
               <Input
-                label="Mention d'exoneration"
+                label="Mention d'exonération"
                 {...register("vatExemptionText")}
               />
             )}
             {isVatExempt === "0" && (
               <Input
-                label="Numero de TVA intracommunautaire"
+                label="Numéro de TVA intracommunautaire"
                 {...register("vatNumber")}
               />
             )}
@@ -176,12 +176,12 @@ export function SettingsPage() {
         <Card title="Conditions de paiement">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
-              label="Delai de paiement (jours)"
+              label="Délai de paiement (jours)"
               type="number"
               {...register("defaultPaymentTermsDays")}
             />
             <Input
-              label="Taux de penalites de retard (%)"
+              label="Taux de pénalités de retard (%)"
               type="number"
               step="0.1"
               {...register("defaultLatePenaltyRate")}
@@ -189,15 +189,15 @@ export function SettingsPage() {
           </div>
         </Card>
 
-        <Card title="Numerotation">
+        <Card title="Numérotation">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
-              label="Prefixe factures"
+              label="Préfixe factures"
               {...register("invoicePrefix")}
               placeholder="F"
             />
             <Input
-              label="Prefixe devis"
+              label="Préfixe devis"
               {...register("quotePrefix")}
               placeholder="D"
             />

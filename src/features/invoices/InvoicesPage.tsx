@@ -14,9 +14,9 @@ const statusConfig: Record<
   { label: string; variant: "default" | "success" | "warning" | "danger" | "info" }
 > = {
   draft: { label: "Brouillon", variant: "default" },
-  sent: { label: "Envoyee", variant: "info" },
-  paid: { label: "Payee", variant: "success" },
-  cancelled: { label: "Annulee", variant: "danger" },
+  sent: { label: "Envoyée", variant: "info" },
+  paid: { label: "Payée", variant: "success" },
+  cancelled: { label: "Annulée", variant: "danger" },
 };
 
 export function InvoicesPage() {
@@ -49,9 +49,9 @@ export function InvoicesPage() {
         {[
           { key: "all", label: "Toutes" },
           { key: "draft", label: "Brouillons" },
-          { key: "sent", label: "Envoyees" },
-          { key: "paid", label: "Payees" },
-          { key: "cancelled", label: "Annulees" },
+          { key: "sent", label: "Envoyées" },
+          { key: "paid", label: "Payées" },
+          { key: "cancelled", label: "Annulées" },
         ].map(({ key, label }) => (
           <button
             key={key}
@@ -74,7 +74,7 @@ export function InvoicesPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200 text-left text-sm text-gray-500">
-                <th className="pb-3 font-medium">Numero</th>
+                <th className="pb-3 font-medium">Numéro</th>
                 <th className="pb-3 font-medium">Client</th>
                 <th className="pb-3 font-medium">Date</th>
                 <th className="pb-3 font-medium">Montant TTC</th>

@@ -120,10 +120,10 @@ export function ClientForm() {
                 {...register("companyName")}
               />
             )}
-            <Input label="Prenom" {...register("firstName")} />
+            <Input label="Prénom" {...register("firstName")} />
             <Input label="Nom" {...register("lastName")} />
             <Input label="Email" type="email" {...register("email")} />
-            <Input label="Telephone" {...register("phone")} />
+            <Input label="Téléphone" {...register("phone")} />
           </div>
         </Card>
 
@@ -187,7 +187,7 @@ export function ClientForm() {
             Annuler
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Enregistrement..." : isEdit ? "Modifier" : "Creer"}
+            {isSubmitting ? "Enregistrement..." : isEdit ? "Modifier" : "Créer"}
           </Button>
         </div>
       </form>

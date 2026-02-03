@@ -14,9 +14,9 @@ import type { Quote } from "../../types/quote";
 
 const invoiceStatusLabels: Record<string, { label: string; variant: "default" | "success" | "warning" | "danger" | "info" }> = {
   draft: { label: "Brouillon", variant: "default" },
-  sent: { label: "Envoyee", variant: "info" },
-  paid: { label: "Payee", variant: "success" },
-  cancelled: { label: "Annulee", variant: "danger" },
+  sent: { label: "Envoyée", variant: "info" },
+  paid: { label: "Payée", variant: "success" },
+  cancelled: { label: "Annulée", variant: "danger" },
 };
 
 export function DashboardPage() {
@@ -124,7 +124,7 @@ export function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card title="Dernieres factures">
+        <Card title="Dernières factures">
           {recentInvoices.length === 0 ? (
             <p className="text-sm text-gray-500">Aucune facture</p>
           ) : (

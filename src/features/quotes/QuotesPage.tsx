@@ -14,10 +14,10 @@ const statusConfig: Record<
   { label: string; variant: "default" | "success" | "warning" | "danger" | "info" }
 > = {
   draft: { label: "Brouillon", variant: "default" },
-  sent: { label: "Envoye", variant: "info" },
-  accepted: { label: "Accepte", variant: "success" },
-  rejected: { label: "Refuse", variant: "danger" },
-  expired: { label: "Expire", variant: "warning" },
+  sent: { label: "Envoyé", variant: "info" },
+  accepted: { label: "Accepté", variant: "success" },
+  rejected: { label: "Refusé", variant: "danger" },
+  expired: { label: "Expiré", variant: "warning" },
 };
 
 export function QuotesPage() {
@@ -48,9 +48,9 @@ export function QuotesPage() {
         {[
           { key: "all", label: "Tous" },
           { key: "draft", label: "Brouillons" },
-          { key: "sent", label: "Envoyes" },
-          { key: "accepted", label: "Acceptes" },
-          { key: "rejected", label: "Refuses" },
+          { key: "sent", label: "Envoyés" },
+          { key: "accepted", label: "Acceptés" },
+          { key: "rejected", label: "Refusés" },
         ].map(({ key, label }) => (
           <button
             key={key}
@@ -73,10 +73,10 @@ export function QuotesPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200 text-left text-sm text-gray-500">
-                <th className="pb-3 font-medium">Numero</th>
+                <th className="pb-3 font-medium">Numéro</th>
                 <th className="pb-3 font-medium">Client</th>
                 <th className="pb-3 font-medium">Date</th>
-                <th className="pb-3 font-medium">Validite</th>
+                <th className="pb-3 font-medium">Validité</th>
                 <th className="pb-3 font-medium">Montant TTC</th>
                 <th className="pb-3 font-medium">Statut</th>
               </tr>

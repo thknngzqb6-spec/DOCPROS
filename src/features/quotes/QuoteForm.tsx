@@ -32,7 +32,7 @@ interface LineDraft {
 }
 
 const UNIT_OPTIONS = [
-  { value: "unite", label: "Unite" },
+  { value: "unite", label: "Unité" },
   { value: "heure", label: "Heure" },
   { value: "jour", label: "Jour" },
   { value: "forfait", label: "Forfait" },
@@ -196,10 +196,10 @@ export function QuoteForm() {
         {isEdit ? "Modifier le devis" : "Nouveau devis"}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Card title="Informations generales">
+        <Card title="Informations générales">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Input
-              label="Numero"
+              label="Numéro"
               value={quoteNumber}
               readOnly
               className="bg-gray-50"
@@ -209,7 +209,7 @@ export function QuoteForm() {
               value={String(clientId)}
               onChange={(e) => setClientId(Number(e.target.value))}
               options={[
-                { value: "", label: "Selectionner..." },
+                { value: "", label: "Sélectionner..." },
                 ...clients.map((c) => ({
                   value: String(c.id),
                   label:
@@ -219,13 +219,13 @@ export function QuoteForm() {
               ]}
             />
             <Input
-              label="Date d'emission"
+              label="Date d'émission"
               type="date"
               value={issueDate}
               onChange={(e) => setIssueDate(e.target.value)}
             />
             <Input
-              label="Date de validite"
+              label="Date de validité"
               type="date"
               value={validityDate}
               onChange={(e) => setValidityDate(e.target.value)}
@@ -238,7 +238,7 @@ export function QuoteForm() {
             <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500">
               <div className="col-span-4">Description</div>
               <div className="col-span-1">Qte</div>
-              <div className="col-span-2">Unite</div>
+              <div className="col-span-2">Unité</div>
               <div className="col-span-2">Prix HT</div>
               <div className="col-span-2">TVA</div>
               <div className="col-span-1"></div>
@@ -390,7 +390,7 @@ export function QuoteForm() {
               ? "Enregistrement..."
               : isEdit
                 ? "Modifier"
-                : "Creer le devis"}
+                : "Créer le devis"}
           </Button>
         </div>
       </form>
