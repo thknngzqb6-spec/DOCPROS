@@ -73,9 +73,14 @@ export function QuoteDetail() {
     load();
   };
 
-  const handleExportPdf = () => {
-    const doc = buildQuotePdf(quote);
-    downloadPdf(doc, `${quote.quoteNumber}.pdf`);
+  const handleExportPdf = async () => {
+    try {
+      const doc = buildQuotePdf(quote);
+      await downloadPdf(doc, `${quote.quoteNumber}.pdf`);
+    } catch (err) {
+      console.error("Erreur export PDF :", err);
+      alert("Erreur lors de l'export PDF : " + String(err));
+    }
   };
 
   const handleConvertToInvoice = async () => {

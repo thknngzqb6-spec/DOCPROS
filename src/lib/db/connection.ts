@@ -141,13 +141,15 @@ CREATE INDEX IF NOT EXISTS idx_quote_lines_quote_id ON quote_lines(quote_id);
 
 export async function getDb(): Promise<Database> {
   if (db) return db;
-  db = await Database.load("sqlite:docpro.db");
+  const instance = await Database.load("sqlite:docpro.db");
   // Run migrations
   const statements = MIGRATION_SQL.split(";")
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
   for (const stmt of statements) {
-    await db.execute(stmt);
+    await instance.execute(stmt);
   }
+  // Only cache after successful migrations
+  db = instance;
   return db;
 }

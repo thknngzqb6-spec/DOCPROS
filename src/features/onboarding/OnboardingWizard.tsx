@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Check, ChevronRight, Building2, FileText, Users } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
@@ -15,7 +14,6 @@ const STEPS = [
 ];
 
 export function OnboardingWizard() {
-  const navigate = useNavigate();
   const { updateSettings } = useSettingsStore();
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
@@ -64,27 +62,34 @@ export function OnboardingWizard() {
 
   const handleFinish = async () => {
     setSaving(true);
-    await updateSettings({
-      businessName,
-      firstName,
-      lastName,
-      siret,
-      address,
-      postalCode,
-      city,
-      email: email || null,
-      phone: phone || null,
-      vatNumber: isVatExempt === "0" ? vatNumber || null : null,
-      isVatExempt: isVatExempt === "1",
-      vatExemptionText: "TVA non applicable, article 293 B du CGI",
-      defaultPaymentTermsDays: 30,
-      defaultLatePenaltyRate: 3.0,
-      invoicePrefix: "F",
-      quotePrefix: "D",
-      logo: null,
-    });
-    setSaving(false);
-    navigate("/");
+    try {
+      await updateSettings({
+        businessName,
+        firstName,
+        lastName,
+        siret,
+        address,
+        postalCode,
+        city,
+        email: email || null,
+        phone: phone || null,
+        vatNumber: isVatExempt === "0" ? vatNumber || null : null,
+        isVatExempt: isVatExempt === "1",
+        vatExemptionText: "TVA non applicable, article 293 B du CGI",
+        defaultPaymentTermsDays: 30,
+        defaultLatePenaltyRate: 3.0,
+        invoicePrefix: "F",
+        quotePrefix: "D",
+        logo: null,
+      });
+      // Force full page reload to ensure settings are read fresh from SQLite
+      window.location.href = "/";
+    } catch (err) {
+      console.error("Erreur lors de la sauvegarde :", err);
+      alert("Erreur lors de la sauvegarde : " + String(err));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (

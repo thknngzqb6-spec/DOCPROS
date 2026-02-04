@@ -70,9 +70,14 @@ export function InvoiceDetail() {
     load();
   };
 
-  const handleExportPdf = () => {
-    const doc = buildInvoicePdf(invoice);
-    downloadPdf(doc, `${invoice.invoiceNumber}.pdf`);
+  const handleExportPdf = async () => {
+    try {
+      const doc = buildInvoicePdf(invoice);
+      await downloadPdf(doc, `${invoice.invoiceNumber}.pdf`);
+    } catch (err) {
+      console.error("Erreur export PDF :", err);
+      alert("Erreur lors de l'export PDF : " + String(err));
+    }
   };
 
   return (
