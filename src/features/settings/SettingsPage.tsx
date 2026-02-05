@@ -1,5 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { ImagePlus, Trash2 } from "lucide-react";
+import { open } from "@tauri-apps/plugin-dialog";
+import { readFile } from "@tauri-apps/plugin-fs";
 import { Card } from "../../components/ui/Card";
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
@@ -29,6 +32,7 @@ interface SettingsFormData {
 export function SettingsPage() {
   const { settings, loaded, loadSettings, updateSettings } =
     useSettingsStore();
+  const [logo, setLogo] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -45,6 +49,7 @@ export function SettingsPage() {
 
   useEffect(() => {
     if (settings) {
+      setLogo(settings.logo);
       reset({
         businessName: settings.businessName,
         firstName: settings.firstName,
@@ -84,8 +89,41 @@ export function SettingsPage() {
       defaultLatePenaltyRate: parseFloat(data.defaultLatePenaltyRate),
       invoicePrefix: data.invoicePrefix,
       quotePrefix: data.quotePrefix,
-      logo: settings?.logo ?? null,
+      logo,
     });
+  };
+
+  const handlePickLogo = async () => {
+    try {
+      const file = await open({
+        multiple: false,
+        filters: [{ name: "Images", extensions: ["png", "jpg", "jpeg", "webp"] }],
+      });
+      if (!file) return;
+
+      const bytes = await readFile(file);
+      const ext = file.split(".").pop()?.toLowerCase() ?? "png";
+      const mimeType = ext === "jpg" ? "image/jpeg" : `image/${ext}`;
+
+      // Create Blob and convert to data URL using FileReader
+      const blob = new Blob([bytes], { type: mimeType });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        setLogo(dataUrl);
+      };
+      reader.onerror = () => {
+        alert("Erreur lors de la lecture de l'image");
+      };
+      reader.readAsDataURL(blob);
+    } catch (err) {
+      console.error("Erreur lors du chargement du logo :", err);
+      alert("Erreur lors du chargement de l'image : " + String(err));
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setLogo(null);
   };
 
   if (!loaded) {
@@ -96,6 +134,41 @@ export function SettingsPage() {
     <div className="mx-auto max-w-3xl space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Paramètres</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <Card title="Logo de l'entreprise">
+          <div className="flex items-center gap-6">
+            {logo ? (
+              <div className="relative">
+                <img
+                  src={logo}
+                  alt="Logo"
+                  className="h-24 w-24 rounded-lg border border-gray-200 object-contain bg-white p-2"
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveLogo}
+                  className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
+                  title="Supprimer le logo"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
+                <ImagePlus size={32} className="text-gray-400" />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Button type="button" variant="secondary" size="sm" onClick={handlePickLogo}>
+                <ImagePlus size={16} className="mr-2" />
+                {logo ? "Changer le logo" : "Ajouter un logo"}
+              </Button>
+              <p className="text-xs text-gray-500">
+                PNG, JPG ou WebP. Recommandé : 200x200px
+              </p>
+            </div>
+          </div>
+        </Card>
+
         <Card title="Identité de l'entreprise">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input

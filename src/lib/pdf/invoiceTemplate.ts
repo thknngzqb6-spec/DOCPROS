@@ -1,12 +1,17 @@
-import type { TDocumentDefinitions } from "pdfmake/interfaces";
+import type { TDocumentDefinitions, Content } from "pdfmake/interfaces";
 import type { InvoiceWithLines } from "../../types/invoice";
 import { formatDate } from "../utils/formatDate";
 import { groupVatByRate } from "../utils/calculations";
 
-export function buildInvoicePdf(invoice: InvoiceWithLines): TDocumentDefinitions {
+export function buildInvoicePdf(
+  invoice: InvoiceWithLines,
+  logo?: string | null
+): TDocumentDefinitions {
   const vatBreakdown = groupVatByRate(invoice.lines);
+  // Format number with regular space instead of non-breaking spaces (fixes font rendering)
   const fmt = (n: number) =>
-    n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      .replace(/[\u00A0\u202F]/g, " ");
 
   const legalFooter: string[] = [];
   legalFooter.push(
@@ -17,6 +22,18 @@ export function buildInvoicePdf(invoice: InvoiceWithLines): TDocumentDefinitions
     legalFooter.push(invoice.recoveryCostsText);
   }
 
+  // Build seller info stack with optional logo
+  const sellerStack: Content[] = [];
+  if (logo) {
+    sellerStack.push({ image: logo, width: 80, margin: [0, 0, 0, 10] as [number, number, number, number] });
+  }
+  sellerStack.push({ text: invoice.sellerName, style: "sellerName" });
+  sellerStack.push({ text: `SIRET : ${invoice.sellerSiret}`, style: "sellerInfo" });
+  sellerStack.push({ text: invoice.sellerAddress, style: "sellerInfo" });
+  if (invoice.sellerVatNumber) {
+    sellerStack.push({ text: `TVA : ${invoice.sellerVatNumber}`, style: "sellerInfo" });
+  }
+
   return {
     content: [
       // Seller info
@@ -24,14 +41,7 @@ export function buildInvoicePdf(invoice: InvoiceWithLines): TDocumentDefinitions
         columns: [
           {
             width: "*",
-            stack: [
-              { text: invoice.sellerName, style: "sellerName" },
-              { text: `SIRET : ${invoice.sellerSiret}`, style: "sellerInfo" },
-              { text: invoice.sellerAddress, style: "sellerInfo" },
-              invoice.sellerVatNumber
-                ? { text: `TVA : ${invoice.sellerVatNumber}`, style: "sellerInfo" }
-                : "",
-            ],
+            stack: sellerStack,
           },
           {
             width: "auto",

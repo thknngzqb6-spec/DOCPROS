@@ -21,6 +21,7 @@ import { buildInvoicePdf } from "../../lib/pdf/invoiceTemplate";
 import { downloadPdf } from "../../lib/pdf/pdfGenerator";
 import { formatCurrency } from "../../lib/utils/formatCurrency";
 import { formatDate } from "../../lib/utils/formatDate";
+import { useSettingsStore } from "../../stores/useSettingsStore";
 import type { InvoiceWithLines } from "../../types/invoice";
 
 const statusConfig: Record<
@@ -36,6 +37,7 @@ const statusConfig: Record<
 export function InvoiceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { settings, loadSettings } = useSettingsStore();
   const [invoice, setInvoice] = useState<InvoiceWithLines | null>(null);
   const [showFinalizeModal, setShowFinalizeModal] = useState(false);
 
@@ -45,6 +47,7 @@ export function InvoiceDetail() {
 
   useEffect(() => {
     load();
+    if (!settings) loadSettings();
   }, [id]);
 
   if (!invoice) {
@@ -72,7 +75,8 @@ export function InvoiceDetail() {
 
   const handleExportPdf = async () => {
     try {
-      const doc = buildInvoicePdf(invoice);
+      console.log("Settings logo:", settings?.logo ? "présent (" + settings.logo.substring(0, 50) + "...)" : "absent");
+      const doc = buildInvoicePdf(invoice, settings?.logo);
       await downloadPdf(doc, `${invoice.invoiceNumber}.pdf`);
     } catch (err) {
       console.error("Erreur export PDF :", err);

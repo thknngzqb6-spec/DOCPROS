@@ -1,12 +1,29 @@
-import type { TDocumentDefinitions } from "pdfmake/interfaces";
+import type { TDocumentDefinitions, Content } from "pdfmake/interfaces";
 import type { QuoteWithLines } from "../../types/quote";
 import { formatDate } from "../utils/formatDate";
 import { groupVatByRate } from "../utils/calculations";
 
-export function buildQuotePdf(quote: QuoteWithLines): TDocumentDefinitions {
+export function buildQuotePdf(
+  quote: QuoteWithLines,
+  logo?: string | null
+): TDocumentDefinitions {
   const vatBreakdown = groupVatByRate(quote.lines);
+  // Format number with regular space instead of non-breaking spaces (fixes font rendering)
   const fmt = (n: number) =>
-    n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      .replace(/[\u00A0\u202F]/g, " ");
+
+  // Build seller info stack with optional logo
+  const sellerStack: Content[] = [];
+  if (logo) {
+    sellerStack.push({ image: logo, width: 80, margin: [0, 0, 0, 10] as [number, number, number, number] });
+  }
+  sellerStack.push({ text: quote.sellerName, style: "sellerName" });
+  sellerStack.push({ text: `SIRET : ${quote.sellerSiret}`, style: "sellerInfo" });
+  sellerStack.push({ text: quote.sellerAddress, style: "sellerInfo" });
+  if (quote.sellerVatNumber) {
+    sellerStack.push({ text: `TVA : ${quote.sellerVatNumber}`, style: "sellerInfo" });
+  }
 
   return {
     content: [
@@ -15,14 +32,7 @@ export function buildQuotePdf(quote: QuoteWithLines): TDocumentDefinitions {
         columns: [
           {
             width: "*",
-            stack: [
-              { text: quote.sellerName, style: "sellerName" },
-              { text: `SIRET : ${quote.sellerSiret}`, style: "sellerInfo" },
-              { text: quote.sellerAddress, style: "sellerInfo" },
-              quote.sellerVatNumber
-                ? { text: `TVA : ${quote.sellerVatNumber}`, style: "sellerInfo" }
-                : "",
-            ],
+            stack: sellerStack,
           },
           {
             width: "auto",

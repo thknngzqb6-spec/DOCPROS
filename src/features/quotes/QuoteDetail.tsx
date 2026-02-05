@@ -38,7 +38,7 @@ const statusConfig: Record<
 export function QuoteDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { settings } = useSettingsStore();
+  const { settings, loadSettings } = useSettingsStore();
   const [quote, setQuote] = useState<QuoteWithLines | null>(null);
   const [showConvertModal, setShowConvertModal] = useState(false);
   const [converting, setConverting] = useState(false);
@@ -49,6 +49,7 @@ export function QuoteDetail() {
 
   useEffect(() => {
     load();
+    if (!settings) loadSettings();
   }, [id]);
 
   if (!quote) {
@@ -75,7 +76,7 @@ export function QuoteDetail() {
 
   const handleExportPdf = async () => {
     try {
-      const doc = buildQuotePdf(quote);
+      const doc = buildQuotePdf(quote, settings?.logo);
       await downloadPdf(doc, `${quote.quoteNumber}.pdf`);
     } catch (err) {
       console.error("Erreur export PDF :", err);
