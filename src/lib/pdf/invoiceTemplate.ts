@@ -3,9 +3,19 @@ import type { InvoiceWithLines } from "../../types/invoice";
 import { formatDate } from "../utils/formatDate";
 import { groupVatByRate } from "../utils/calculations";
 
+export interface SellerLegalInfo {
+  legalForm?: string | null;
+  rcsNumber?: string | null;
+  shareCapital?: number | null;
+  paymentMethods?: string;
+  iban?: string | null;
+  bic?: string | null;
+}
+
 export function buildInvoicePdf(
   invoice: InvoiceWithLines,
-  logo?: string | null
+  logo?: string | null,
+  legalInfo?: SellerLegalInfo
 ): TDocumentDefinitions {
   const vatBreakdown = groupVatByRate(invoice.lines);
   // Format number with regular space instead of non-breaking spaces (fixes font rendering)
@@ -14,9 +24,22 @@ export function buildInvoicePdf(
       .replace(/[\u00A0\u202F]/g, " ");
 
   const legalFooter: string[] = [];
+  // Mode de règlement
+  const paymentMethods = legalInfo?.paymentMethods || "Virement bancaire";
+  legalFooter.push(`Mode de reglement : ${paymentMethods}.`);
+  // Coordonnées bancaires
+  if (legalInfo?.iban) {
+    let bankLine = `IBAN : ${legalInfo.iban}`;
+    if (legalInfo.bic) {
+      bankLine += ` - BIC : ${legalInfo.bic}`;
+    }
+    legalFooter.push(bankLine);
+  }
   legalFooter.push(
     `Conditions de paiement : ${invoice.paymentTermsDays} jours. Echeance : ${formatDate(invoice.dueDate)}.`
   );
+  // Escompte (obligatoire)
+  legalFooter.push("Pas d'escompte pour paiement anticipe.");
   legalFooter.push(invoice.latePenaltyText);
   if (invoice.buyerIsProfessional) {
     legalFooter.push(invoice.recoveryCostsText);
@@ -27,8 +50,20 @@ export function buildInvoicePdf(
   if (logo) {
     sellerStack.push({ image: logo, width: 80, margin: [0, 0, 0, 10] as [number, number, number, number] });
   }
-  sellerStack.push({ text: invoice.sellerName, style: "sellerName" });
+  // Nom + forme juridique + capital
+  let sellerNameLine = invoice.sellerName;
+  if (legalInfo?.legalForm) {
+    sellerNameLine += ` - ${legalInfo.legalForm}`;
+    if (legalInfo.shareCapital) {
+      sellerNameLine += ` au capital de ${fmt(legalInfo.shareCapital)} EUR`;
+    }
+  }
+  sellerStack.push({ text: sellerNameLine, style: "sellerName" });
   sellerStack.push({ text: `SIRET : ${invoice.sellerSiret}`, style: "sellerInfo" });
+  // RCS/RM
+  if (legalInfo?.rcsNumber) {
+    sellerStack.push({ text: legalInfo.rcsNumber, style: "sellerInfo" });
+  }
   sellerStack.push({ text: invoice.sellerAddress, style: "sellerInfo" });
   if (invoice.sellerVatNumber) {
     sellerStack.push({ text: `TVA : ${invoice.sellerVatNumber}`, style: "sellerInfo" });

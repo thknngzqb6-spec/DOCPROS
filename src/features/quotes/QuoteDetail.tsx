@@ -76,7 +76,12 @@ export function QuoteDetail() {
 
   const handleExportPdf = async () => {
     try {
-      const doc = buildQuotePdf(quote, settings?.logo);
+      const legalInfo = settings ? {
+        legalForm: settings.legalForm,
+        rcsNumber: settings.rcsNumber,
+        shareCapital: settings.shareCapital,
+      } : undefined;
+      const doc = buildQuotePdf(quote, settings?.logo, legalInfo);
       await downloadPdf(doc, `${quote.quoteNumber}.pdf`);
     } catch (err) {
       console.error("Erreur export PDF :", err);

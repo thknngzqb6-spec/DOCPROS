@@ -81,6 +81,12 @@ export function OnboardingWizard() {
         invoicePrefix: "F",
         quotePrefix: "D",
         logo: null,
+        legalForm: null,
+        rcsNumber: null,
+        shareCapital: null,
+        paymentMethods: "Virement bancaire",
+        iban: null,
+        bic: null,
       });
       // Force full page reload to ensure settings are read fresh from SQLite
       window.location.href = "/";

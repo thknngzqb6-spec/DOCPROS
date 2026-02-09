@@ -27,6 +27,14 @@ interface SettingsFormData {
   defaultLatePenaltyRate: string;
   invoicePrefix: string;
   quotePrefix: string;
+  // Mentions légales
+  legalForm: string;
+  rcsNumber: string;
+  shareCapital: string;
+  paymentMethods: string;
+  // Coordonnées bancaires
+  iban: string;
+  bic: string;
 }
 
 export function SettingsPage() {
@@ -67,6 +75,12 @@ export function SettingsPage() {
         defaultLatePenaltyRate: String(settings.defaultLatePenaltyRate),
         invoicePrefix: settings.invoicePrefix,
         quotePrefix: settings.quotePrefix,
+        legalForm: settings.legalForm ?? "",
+        rcsNumber: settings.rcsNumber ?? "",
+        shareCapital: settings.shareCapital ? String(settings.shareCapital) : "",
+        paymentMethods: settings.paymentMethods ?? "Virement bancaire",
+        iban: settings.iban ?? "",
+        bic: settings.bic ?? "",
       });
     }
   }, [settings, reset]);
@@ -90,6 +104,12 @@ export function SettingsPage() {
       invoicePrefix: data.invoicePrefix,
       quotePrefix: data.quotePrefix,
       logo,
+      legalForm: data.legalForm || null,
+      rcsNumber: data.rcsNumber || null,
+      shareCapital: data.shareCapital ? parseFloat(data.shareCapital) : null,
+      paymentMethods: data.paymentMethods || "Virement bancaire",
+      iban: data.iban || null,
+      bic: data.bic || null,
     });
   };
 
@@ -218,6 +238,69 @@ export function SettingsPage() {
             />
             <Input label="Email" type="email" {...register("email")} />
             <Input label="Téléphone" {...register("phone")} />
+          </div>
+        </Card>
+
+        <Card title="Mentions légales (optionnel)">
+          <p className="mb-4 text-xs text-gray-500">
+            Ces informations apparaîtront sur vos factures. Obligatoires pour les sociétés (SARL, SAS...), optionnelles pour les micro-entrepreneurs.
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Select
+              label="Forme juridique"
+              options={[
+                { value: "", label: "Non applicable" },
+                { value: "EI", label: "EI - Entreprise individuelle" },
+                { value: "EIRL", label: "EIRL" },
+                { value: "EURL", label: "EURL" },
+                { value: "SARL", label: "SARL" },
+                { value: "SAS", label: "SAS" },
+                { value: "SASU", label: "SASU" },
+                { value: "SA", label: "SA" },
+                { value: "SNC", label: "SNC" },
+              ]}
+              {...register("legalForm")}
+            />
+            <Input
+              label="Capital social (€)"
+              type="number"
+              placeholder="1000"
+              {...register("shareCapital")}
+            />
+            <div className="sm:col-span-2">
+              <Input
+                label="RCS / RM"
+                placeholder="RCS Paris B 123 456 789"
+                {...register("rcsNumber")}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Input
+                label="Modes de règlement acceptés"
+                placeholder="Virement bancaire, chèque"
+                {...register("paymentMethods")}
+              />
+            </div>
+          </div>
+        </Card>
+
+        <Card title="Coordonnées bancaires (optionnel)">
+          <p className="mb-4 text-xs text-gray-500">
+            Ces informations seront affichées sur vos factures pour faciliter le paiement par virement.
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <Input
+                label="IBAN"
+                placeholder="FR76 1234 5678 9012 3456 7890 123"
+                {...register("iban")}
+              />
+            </div>
+            <Input
+              label="BIC / SWIFT"
+              placeholder="BNPAFRPP"
+              {...register("bic")}
+            />
           </div>
         </Card>
 

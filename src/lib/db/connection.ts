@@ -21,7 +21,13 @@ CREATE TABLE IF NOT EXISTS settings (
     default_late_penalty_rate REAL NOT NULL DEFAULT 3.0,
     invoice_prefix TEXT NOT NULL DEFAULT 'F',
     quote_prefix TEXT NOT NULL DEFAULT 'D',
-    logo TEXT
+    logo TEXT,
+    legal_form TEXT,
+    rcs_number TEXT,
+    share_capital REAL,
+    payment_methods TEXT NOT NULL DEFAULT 'Virement bancaire',
+    iban TEXT,
+    bic TEXT
 );
 
 CREATE TABLE IF NOT EXISTS clients (
@@ -139,15 +145,33 @@ CREATE INDEX IF NOT EXISTS idx_quotes_status ON quotes(status);
 CREATE INDEX IF NOT EXISTS idx_quote_lines_quote_id ON quote_lines(quote_id);
 `;
 
+// Migrations for existing databases (add new columns)
+const MIGRATIONS = [
+  "ALTER TABLE settings ADD COLUMN legal_form TEXT",
+  "ALTER TABLE settings ADD COLUMN rcs_number TEXT",
+  "ALTER TABLE settings ADD COLUMN share_capital REAL",
+  "ALTER TABLE settings ADD COLUMN payment_methods TEXT NOT NULL DEFAULT 'Virement bancaire'",
+  "ALTER TABLE settings ADD COLUMN iban TEXT",
+  "ALTER TABLE settings ADD COLUMN bic TEXT",
+];
+
 export async function getDb(): Promise<Database> {
   if (db) return db;
   const instance = await Database.load("sqlite:docpro.db");
-  // Run migrations
+  // Run schema creation
   const statements = MIGRATION_SQL.split(";")
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
   for (const stmt of statements) {
     await instance.execute(stmt);
+  }
+  // Run migrations (ignore errors if columns already exist)
+  for (const migration of MIGRATIONS) {
+    try {
+      await instance.execute(migration);
+    } catch {
+      // Column probably already exists, ignore
+    }
   }
   // Only cache after successful migrations
   db = instance;

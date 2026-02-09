@@ -3,9 +3,16 @@ import type { QuoteWithLines } from "../../types/quote";
 import { formatDate } from "../utils/formatDate";
 import { groupVatByRate } from "../utils/calculations";
 
+export interface SellerLegalInfo {
+  legalForm?: string | null;
+  rcsNumber?: string | null;
+  shareCapital?: number | null;
+}
+
 export function buildQuotePdf(
   quote: QuoteWithLines,
-  logo?: string | null
+  logo?: string | null,
+  legalInfo?: SellerLegalInfo
 ): TDocumentDefinitions {
   const vatBreakdown = groupVatByRate(quote.lines);
   // Format number with regular space instead of non-breaking spaces (fixes font rendering)
@@ -18,8 +25,20 @@ export function buildQuotePdf(
   if (logo) {
     sellerStack.push({ image: logo, width: 80, margin: [0, 0, 0, 10] as [number, number, number, number] });
   }
-  sellerStack.push({ text: quote.sellerName, style: "sellerName" });
+  // Nom + forme juridique + capital
+  let sellerNameLine = quote.sellerName;
+  if (legalInfo?.legalForm) {
+    sellerNameLine += ` - ${legalInfo.legalForm}`;
+    if (legalInfo.shareCapital) {
+      sellerNameLine += ` au capital de ${fmt(legalInfo.shareCapital)} EUR`;
+    }
+  }
+  sellerStack.push({ text: sellerNameLine, style: "sellerName" });
   sellerStack.push({ text: `SIRET : ${quote.sellerSiret}`, style: "sellerInfo" });
+  // RCS/RM
+  if (legalInfo?.rcsNumber) {
+    sellerStack.push({ text: legalInfo.rcsNumber, style: "sellerInfo" });
+  }
   sellerStack.push({ text: quote.sellerAddress, style: "sellerInfo" });
   if (quote.sellerVatNumber) {
     sellerStack.push({ text: `TVA : ${quote.sellerVatNumber}`, style: "sellerInfo" });

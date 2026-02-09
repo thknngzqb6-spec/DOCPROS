@@ -23,6 +23,12 @@ const DEFAULT_SETTINGS: Omit<Settings, "id"> = {
   invoicePrefix: "F",
   quotePrefix: "D",
   logo: null,
+  legalForm: null,
+  rcsNumber: null,
+  shareCapital: null,
+  paymentMethods: "Virement bancaire",
+  iban: null,
+  bic: null,
 };
 
 interface SettingsStore {

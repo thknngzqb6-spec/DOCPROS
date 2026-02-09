@@ -75,8 +75,15 @@ export function InvoiceDetail() {
 
   const handleExportPdf = async () => {
     try {
-      console.log("Settings logo:", settings?.logo ? "présent (" + settings.logo.substring(0, 50) + "...)" : "absent");
-      const doc = buildInvoicePdf(invoice, settings?.logo);
+      const legalInfo = settings ? {
+        legalForm: settings.legalForm,
+        rcsNumber: settings.rcsNumber,
+        shareCapital: settings.shareCapital,
+        paymentMethods: settings.paymentMethods,
+        iban: settings.iban,
+        bic: settings.bic,
+      } : undefined;
+      const doc = buildInvoicePdf(invoice, settings?.logo, legalInfo);
       await downloadPdf(doc, `${invoice.invoiceNumber}.pdf`);
     } catch (err) {
       console.error("Erreur export PDF :", err);
