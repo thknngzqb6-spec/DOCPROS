@@ -20,6 +20,10 @@ export function buildQuotePdf(
     n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
       .replace(/[\u00A0\u202F]/g, " ");
 
+  // Pluralize unit if quantity > 1
+  const pluralize = (unit: string, qty: number) =>
+    qty > 1 && !unit.endsWith("s") ? unit + "s" : unit;
+
   // Build seller info stack with optional logo
   const sellerStack: Content[] = [];
   if (logo) {
@@ -98,9 +102,9 @@ export function buildQuotePdf(
           widths: ["*", 40, 50, 70, 40, 70],
           body: [
             [
-              { text: "Description", style: "tableHeader" },
+              { text: "Désignation", style: "tableHeader" },
               { text: "Qte", style: "tableHeader" },
-              { text: "Unite", style: "tableHeader" },
+              { text: "Unité", style: "tableHeader" },
               { text: "P.U. HT", style: "tableHeader", alignment: "right" as const },
               { text: "TVA", style: "tableHeader", alignment: "right" as const },
               { text: "Total HT", style: "tableHeader", alignment: "right" as const },
@@ -108,7 +112,7 @@ export function buildQuotePdf(
             ...quote.lines.map((l) => [
               { text: l.description, fontSize: 9 },
               { text: String(l.quantity), fontSize: 9 },
-              { text: l.unit, fontSize: 9 },
+              { text: pluralize(l.unit, l.quantity), fontSize: 9 },
               { text: `${fmt(l.unitPriceHt)} EUR`, fontSize: 9, alignment: "right" as const },
               { text: `${l.vatRate}%`, fontSize: 9, alignment: "right" as const },
               { text: `${fmt(l.totalHt)} EUR`, fontSize: 9, alignment: "right" as const },
@@ -224,8 +228,8 @@ export function buildQuotePdf(
       },
     ],
     styles: {
-      sellerName: { fontSize: 14, bold: true, color: "#1e40af" },
-      sellerInfo: { fontSize: 9, color: "#4b5563" },
+      sellerName: { fontSize: 11, bold: true, color: "#111827" },
+      sellerInfo: { fontSize: 9, bold: true, color: "#111827" },
       docTitle: { fontSize: 22, bold: true, color: "#059669" },
       docNumber: { fontSize: 12, color: "#4b5563" },
       sectionLabel: {
