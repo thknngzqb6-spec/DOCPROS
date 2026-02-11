@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { ImagePlus, Trash2 } from "lucide-react";
+import { ImagePlus, Trash2, Download, Upload } from "lucide-react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { readFile } from "@tauri-apps/plugin-fs";
 import { Card } from "../../components/ui/Card";
@@ -9,6 +9,7 @@ import { Button } from "../../components/ui/Button";
 import { Select } from "../../components/ui/Select";
 import { useSettingsStore } from "../../stores/useSettingsStore";
 import { isValidSiret } from "../../lib/validation/siretValidation";
+import { exportBackup, importBackup } from "../../lib/export/backupRestore";
 
 interface SettingsFormData {
   businessName: string;
@@ -41,6 +42,8 @@ export function SettingsPage() {
   const { settings, loaded, loadSettings, updateSettings } =
     useSettingsStore();
   const [logo, setLogo] = useState<string | null>(null);
+  const [backupStatus, setBackupStatus] = useState<string | null>(null);
+  const [isBackingUp, setIsBackingUp] = useState(false);
   const {
     register,
     handleSubmit,
@@ -369,6 +372,63 @@ export function SettingsPage() {
           </Button>
         </div>
       </form>
+
+      <Card title="Sauvegarde et restauration">
+        <p className="mb-4 text-sm text-gray-600">
+          Exportez vos données pour les transférer sur un autre ordinateur ou créer une sauvegarde.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <Button
+            variant="secondary"
+            disabled={isBackingUp}
+            onClick={async () => {
+              setIsBackingUp(true);
+              setBackupStatus(null);
+              try {
+                await exportBackup();
+                setBackupStatus("Export réussi !");
+              } catch (err) {
+                setBackupStatus("Erreur : " + String(err));
+              } finally {
+                setIsBackingUp(false);
+              }
+            }}
+          >
+            <Download size={16} className="mr-2" />
+            {isBackingUp ? "Export..." : "Exporter mes données"}
+          </Button>
+          <Button
+            variant="secondary"
+            disabled={isBackingUp}
+            onClick={async () => {
+              setIsBackingUp(true);
+              setBackupStatus(null);
+              try {
+                const result = await importBackup();
+                setBackupStatus(result.message);
+                if (result.success) {
+                  loadSettings(); // Reload settings after import
+                }
+              } catch (err) {
+                setBackupStatus("Erreur : " + String(err));
+              } finally {
+                setIsBackingUp(false);
+              }
+            }}
+          >
+            <Upload size={16} className="mr-2" />
+            Importer des données
+          </Button>
+        </div>
+        {backupStatus && (
+          <p className={`mt-3 text-sm ${backupStatus.startsWith("Erreur") ? "text-red-600" : "text-green-600"}`}>
+            {backupStatus}
+          </p>
+        )}
+        <p className="mt-4 text-xs text-gray-500">
+          L'import remplacera les données existantes ayant le même identifiant.
+        </p>
+      </Card>
     </div>
   );
 }

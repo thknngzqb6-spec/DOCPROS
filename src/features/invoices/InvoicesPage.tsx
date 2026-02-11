@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Plus, Download } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import { getInvoices } from "../../lib/db/invoices";
 import { formatCurrency } from "../../lib/utils/formatCurrency";
 import { formatDate } from "../../lib/utils/formatDate";
+import { generateInvoicesCsv, downloadCsv } from "../../lib/export/csvExport";
 import type { Invoice } from "../../types/invoice";
 
 const statusConfig: Record<
@@ -37,12 +38,32 @@ export function InvoicesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">Factures</h2>
-        <Link to="/invoices/new">
-          <Button size="sm">
-            <Plus size={16} className="mr-2" />
-            Nouvelle facture
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          {invoices.length > 0 && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={async () => {
+                try {
+                  const csv = generateInvoicesCsv(invoices);
+                  const date = new Date().toISOString().slice(0, 10);
+                  await downloadCsv(csv, `factures-${date}.csv`);
+                } catch (err) {
+                  console.error("Erreur export CSV:", err);
+                }
+              }}
+            >
+              <Download size={16} className="mr-2" />
+              Export CSV
+            </Button>
+          )}
+          <Link to="/invoices/new">
+            <Button size="sm">
+              <Plus size={16} className="mr-2" />
+              Nouvelle facture
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="flex gap-2">
