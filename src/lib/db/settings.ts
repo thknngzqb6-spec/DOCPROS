@@ -35,7 +35,7 @@ export async function saveSettings(
       default_payment_terms_days, default_late_penalty_rate,
       invoice_prefix, quote_prefix, logo,
       legal_form, rcs_number, share_capital, payment_methods,
-      iban, bic
+      iban, bic, cgu_accepted_at
     ) VALUES (
       1, $1, $2, $3, $4,
       $5, $6, $7, $8, $9,
@@ -43,7 +43,7 @@ export async function saveSettings(
       $13, $14,
       $15, $16, $17,
       $18, $19, $20, $21,
-      $22, $23
+      $22, $23, $24
     )`,
     [
       settings.businessName,
@@ -69,6 +69,7 @@ export async function saveSettings(
       settings.paymentMethods,
       settings.iban,
       settings.bic,
+      settings.cguAcceptedAt,
     ]
   );
   return { ...settings, id: 1 };

@@ -113,6 +113,7 @@ export function SettingsPage() {
       paymentMethods: data.paymentMethods || "Virement bancaire",
       iban: data.iban || null,
       bic: data.bic || null,
+      cguAcceptedAt: settings?.cguAcceptedAt ?? null,
     });
   };
 

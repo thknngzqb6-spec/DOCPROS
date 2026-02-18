@@ -1,6 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { FileText, FilePlus2, Users, AlertTriangle } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
@@ -35,14 +44,33 @@ export function DashboardPage() {
   }, []);
 
   const currentYear = new Date().getFullYear();
-  const revenueThisYear = invoices
-    .filter((i) => i.status === "paid" && i.issueDate.startsWith(String(currentYear)))
-    .reduce((sum, i) => sum + i.totalTtc, 0);
+  const paidThisYear = invoices.filter(
+    (i) => i.status === "paid" && i.issueDate.startsWith(String(currentYear))
+  );
+  const revenueThisYear = paidThisYear.reduce((sum, i) => sum + i.totalTtc, 0);
 
   const pendingInvoices = invoices.filter((i) => i.status === "sent");
   const overdueInvoices = pendingInvoices.filter(
     (i) => new Date(i.dueDate) < new Date()
   );
+
+  const MONTH_LABELS = [
+    "Jan", "Fév", "Mar", "Avr", "Mai", "Jun",
+    "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc",
+  ];
+
+  const monthlyRevenue = useMemo(() => {
+    const data = MONTH_LABELS.map((name) => ({ name, ca: 0 }));
+    for (const inv of paidThisYear) {
+      const month = new Date(inv.issueDate).getMonth();
+      data[month].ca += inv.totalTtc;
+    }
+    // Round to 2 decimals
+    for (const d of data) {
+      d.ca = Math.round(d.ca * 100) / 100;
+    }
+    return data;
+  }, [invoices, currentYear]);
 
   const recentInvoices = invoices.slice(0, 5);
   const recentQuotes = quotes.slice(0, 5);
@@ -122,6 +150,34 @@ export function DashboardPage() {
           </div>
         </Card>
       </div>
+
+      <Card title={`Évolution du CA ${currentYear}`}>
+        {paidThisYear.length === 0 ? (
+          <p className="text-sm text-gray-500 py-8 text-center">
+            Aucune facture payée cette année
+          </p>
+        ) : (
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthlyRevenue} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(v: number) =>
+                    v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)
+                  }
+                />
+                <Tooltip
+                  formatter={(value) => [formatCurrency(Number(value)), "CA"]}
+                  labelStyle={{ fontWeight: 600 }}
+                />
+                <Bar dataKey="ca" fill="#4f46e5" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </Card>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card title="Dernières factures">

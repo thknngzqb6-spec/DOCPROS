@@ -14,7 +14,7 @@ const STEPS = [
 ];
 
 export function OnboardingWizard() {
-  const { updateSettings } = useSettingsStore();
+  const { settings, updateSettings } = useSettingsStore();
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -87,6 +87,7 @@ export function OnboardingWizard() {
         paymentMethods: "Virement bancaire",
         iban: null,
         bic: null,
+        cguAcceptedAt: settings?.cguAcceptedAt ?? null,
       });
       // Force full page reload to ensure settings are read fresh from SQLite
       window.location.href = "/";

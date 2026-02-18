@@ -12,6 +12,7 @@ import { QuoteForm } from "./features/quotes/QuoteForm";
 import { QuoteDetail } from "./features/quotes/QuoteDetail";
 import { SettingsPage } from "./features/settings/SettingsPage";
 import { OnboardingWizard } from "./features/onboarding/OnboardingWizard";
+import { CguAcceptanceScreen } from "./features/cgu/CguAcceptanceScreen";
 import { useSettingsStore } from "./stores/useSettingsStore";
 import "./index.css";
 
@@ -39,21 +40,41 @@ function AppContent() {
     );
   }
 
-  // Show onboarding if no settings or empty business name
-  const needsOnboarding = !settings || !settings.businessName || !settings.siret;
+  // Check if CGU needs to be accepted (first time ever)
+  const needsCgu = !settings?.cguAcceptedAt;
+  // Show onboarding if CGU accepted but no business info
+  const needsOnboarding = !needsCgu && (!settings?.businessName || !settings?.siret);
 
   return (
     <Routes>
       <Route
+        path="/cgu"
+        element={
+          needsCgu ? <CguAcceptanceScreen /> : <Navigate to="/" replace />
+        }
+      />
+      <Route
         path="/onboarding"
         element={
-          needsOnboarding ? <OnboardingWizard /> : <Navigate to="/" replace />
+          needsCgu ? (
+            <Navigate to="/cgu" replace />
+          ) : needsOnboarding ? (
+            <OnboardingWizard />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
       <Route
         path="/"
         element={
-          needsOnboarding ? <Navigate to="/onboarding" replace /> : <AppLayout />
+          needsCgu ? (
+            <Navigate to="/cgu" replace />
+          ) : needsOnboarding ? (
+            <Navigate to="/onboarding" replace />
+          ) : (
+            <AppLayout />
+          )
         }
       >
         <Route index element={<DashboardPage />} />

@@ -153,6 +153,7 @@ const MIGRATIONS = [
   "ALTER TABLE settings ADD COLUMN payment_methods TEXT NOT NULL DEFAULT 'Virement bancaire'",
   "ALTER TABLE settings ADD COLUMN iban TEXT",
   "ALTER TABLE settings ADD COLUMN bic TEXT",
+  "ALTER TABLE settings ADD COLUMN cgu_accepted_at TEXT",
 ];
 
 export async function getDb(): Promise<Database> {

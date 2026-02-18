@@ -25,4 +25,6 @@ export interface Settings {
   // Coordonnées bancaires
   iban: string | null;
   bic: string | null;
+  // CGU
+  cguAcceptedAt: string | null;
 }

@@ -29,6 +29,7 @@ const DEFAULT_SETTINGS: Omit<Settings, "id"> = {
   paymentMethods: "Virement bancaire",
   iban: null,
   bic: null,
+  cguAcceptedAt: null,
 };
 
 interface SettingsStore {
@@ -36,9 +37,10 @@ interface SettingsStore {
   loaded: boolean;
   loadSettings: () => Promise<void>;
   updateSettings: (settings: Omit<Settings, "id">) => Promise<void>;
+  acceptCgu: () => Promise<void>;
 }
 
-export const useSettingsStore = create<SettingsStore>((set) => ({
+export const useSettingsStore = create<SettingsStore>((set, get) => ({
   settings: null,
   loaded: false,
   loadSettings: async () => {
@@ -52,5 +54,15 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
   updateSettings: async (data) => {
     const settings = await persistSettings(data);
     set({ settings });
+  },
+  acceptCgu: async () => {
+    const current = get().settings;
+    if (current) {
+      const updated = await persistSettings({
+        ...current,
+        cguAcceptedAt: new Date().toISOString(),
+      });
+      set({ settings: updated });
+    }
   },
 }));
