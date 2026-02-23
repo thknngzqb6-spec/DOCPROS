@@ -242,6 +242,29 @@ export function InvoiceDetail() {
         </Card>
       )}
 
+      {settings && (settings.iban || settings.paymentMethods) && (
+        <Card title="Paiement">
+          <div className="space-y-1 text-sm">
+            {settings.paymentMethods && (
+              <p className="text-gray-600">
+                <span className="text-gray-500">Mode de règlement :</span>{" "}
+                {settings.paymentMethods}
+              </p>
+            )}
+            {settings.iban && (
+              <p className="text-gray-600">
+                <span className="text-gray-500">IBAN :</span> {settings.iban}
+              </p>
+            )}
+            {settings.bic && (
+              <p className="text-gray-600">
+                <span className="text-gray-500">BIC :</span> {settings.bic}
+              </p>
+            )}
+          </div>
+        </Card>
+      )}
+
       <Card title="Mentions légales">
         <div className="space-y-2 text-xs text-gray-500">
           <p>
