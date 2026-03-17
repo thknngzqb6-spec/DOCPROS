@@ -1,15 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
-import { ImagePlus, Trash2, Download, Upload } from "lucide-react";
+import { ImagePlus, Trash2, Download, Upload, Plus, Pencil } from "lucide-react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { readFile } from "@tauri-apps/plugin-fs";
 import { Card } from "../../components/ui/Card";
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { Select } from "../../components/ui/Select";
+import { Modal } from "../../components/ui/Modal";
 import { useSettingsStore } from "../../stores/useSettingsStore";
 import { isValidSiret } from "../../lib/validation/siretValidation";
 import { exportBackup, importBackup } from "../../lib/export/backupRestore";
+import {
+  getLineTemplates,
+  createLineTemplate,
+  updateLineTemplate,
+  deleteLineTemplate,
+  type LineTemplateInput,
+} from "../../lib/db/lineTemplates";
+import type { LineTemplate } from "../../types/lineTemplate";
 
 interface SettingsFormData {
   businessName: string;
@@ -44,6 +53,66 @@ export function SettingsPage() {
   const [logo, setLogo] = useState<string | null>(null);
   const [backupStatus, setBackupStatus] = useState<string | null>(null);
   const [isBackingUp, setIsBackingUp] = useState(false);
+
+  // Line templates state
+  const [templates, setTemplates] = useState<LineTemplate[]>([]);
+  const [templateModalOpen, setTemplateModalOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<LineTemplate | null>(null);
+  const [templateForm, setTemplateForm] = useState<LineTemplateInput>({
+    name: "",
+    description: "",
+    quantity: 1,
+    unit: "unite",
+    unitPriceHt: 0,
+    vatRate: 0,
+  });
+  const [templateSaving, setTemplateSaving] = useState(false);
+
+  const loadTemplates = useCallback(async () => {
+    const data = await getLineTemplates();
+    setTemplates(data);
+  }, []);
+
+  useEffect(() => {
+    loadTemplates();
+  }, [loadTemplates]);
+
+  const openNewTemplate = () => {
+    setEditingTemplate(null);
+    setTemplateForm({ name: "", description: "", quantity: 1, unit: "unite", unitPriceHt: 0, vatRate: 0 });
+    setTemplateModalOpen(true);
+  };
+
+  const openEditTemplate = (t: LineTemplate) => {
+    setEditingTemplate(t);
+    setTemplateForm({
+      name: t.name,
+      description: t.description,
+      quantity: t.quantity,
+      unit: t.unit,
+      unitPriceHt: t.unitPriceHt,
+      vatRate: t.vatRate,
+    });
+    setTemplateModalOpen(true);
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!templateForm.name.trim()) return;
+    setTemplateSaving(true);
+    if (editingTemplate) {
+      await updateLineTemplate(editingTemplate.id, templateForm);
+    } else {
+      await createLineTemplate(templateForm);
+    }
+    await loadTemplates();
+    setTemplateModalOpen(false);
+    setTemplateSaving(false);
+  };
+
+  const handleDeleteTemplate = async (id: number) => {
+    await deleteLineTemplate(id);
+    await loadTemplates();
+  };
   const {
     register,
     handleSubmit,
@@ -373,6 +442,128 @@ export function SettingsPage() {
           </Button>
         </div>
       </form>
+
+      <Card title="Modèles de lignes">
+        <p className="mb-4 text-sm text-gray-600">
+          Créez des modèles de prestations récurrentes pour les réutiliser rapidement dans vos factures et devis.
+        </p>
+        {templates.length > 0 ? (
+          <div className="space-y-2">
+            {templates.map((t) => (
+              <div
+                key={t.id}
+                className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3"
+              >
+                <div>
+                  <p className="font-medium text-gray-900">{t.name}</p>
+                  <p className="text-sm text-gray-500">
+                    {t.description && `${t.description} — `}
+                    {t.quantity} × {t.unitPriceHt.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} EUR HT
+                    {t.vatRate > 0 && ` (TVA ${t.vatRate}%)`}
+                  </p>
+                </div>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => openEditTemplate(t)}
+                    className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    title="Modifier"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteTemplate(t.id)}
+                    className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                    title="Supprimer"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-400 italic">Aucun modèle créé.</p>
+        )}
+        <div className="mt-4">
+          <Button type="button" variant="secondary" size="sm" onClick={openNewTemplate}>
+            <Plus size={16} className="mr-2" />
+            Ajouter un modèle
+          </Button>
+        </div>
+      </Card>
+
+      <Modal
+        isOpen={templateModalOpen}
+        onClose={() => setTemplateModalOpen(false)}
+        title={editingTemplate ? "Modifier le modèle" : "Nouveau modèle"}
+      >
+        <div className="space-y-4">
+          <Input
+            label="Nom du modèle"
+            value={templateForm.name}
+            onChange={(e) => setTemplateForm((f) => ({ ...f, name: e.target.value }))}
+            placeholder="Ex: Développement web"
+          />
+          <Input
+            label="Description de la ligne"
+            value={templateForm.description}
+            onChange={(e) => setTemplateForm((f) => ({ ...f, description: e.target.value }))}
+            placeholder="Ex: Développement d'application web React"
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Quantité"
+              type="number"
+              value={templateForm.quantity}
+              onChange={(e) => setTemplateForm((f) => ({ ...f, quantity: parseFloat(e.target.value) || 0 }))}
+              min="0"
+              step="0.5"
+            />
+            <Select
+              label="Tarification"
+              value={templateForm.unit}
+              onChange={(e) => setTemplateForm((f) => ({ ...f, unit: e.target.value }))}
+              options={[
+                { value: "unite", label: "À l'unité" },
+                { value: "heure", label: "À l'heure" },
+                { value: "jour", label: "À la journée" },
+                { value: "forfait", label: "Au forfait" },
+              ]}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Prix unitaire HT (€)"
+              type="number"
+              value={templateForm.unitPriceHt}
+              onChange={(e) => setTemplateForm((f) => ({ ...f, unitPriceHt: parseFloat(e.target.value) || 0 }))}
+              min="0"
+              step="0.01"
+            />
+            <Select
+              label="Taux TVA"
+              value={String(templateForm.vatRate)}
+              onChange={(e) => setTemplateForm((f) => ({ ...f, vatRate: parseFloat(e.target.value) }))}
+              options={[
+                { value: "0", label: "0%" },
+                { value: "5.5", label: "5,5%" },
+                { value: "10", label: "10%" },
+                { value: "20", label: "20%" },
+              ]}
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="button" variant="secondary" onClick={() => setTemplateModalOpen(false)}>
+              Annuler
+            </Button>
+            <Button type="button" onClick={handleSaveTemplate} disabled={templateSaving || !templateForm.name.trim()}>
+              {templateSaving ? "Enregistrement..." : editingTemplate ? "Modifier" : "Créer"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       <Card title="Sauvegarde et restauration">
         <p className="mb-4 text-sm text-gray-600">

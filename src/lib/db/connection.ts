@@ -154,6 +154,17 @@ const MIGRATIONS = [
   "ALTER TABLE settings ADD COLUMN iban TEXT",
   "ALTER TABLE settings ADD COLUMN bic TEXT",
   "ALTER TABLE settings ADD COLUMN cgu_accepted_at TEXT",
+  `CREATE TABLE IF NOT EXISTS line_templates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    quantity REAL NOT NULL DEFAULT 1,
+    unit TEXT NOT NULL DEFAULT 'unite',
+    unit_price_ht REAL NOT NULL DEFAULT 0,
+    vat_rate REAL NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
 ];
 
 export async function getDb(): Promise<Database> {

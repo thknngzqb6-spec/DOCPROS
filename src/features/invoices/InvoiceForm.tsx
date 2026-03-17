@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, FileText } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Input } from "../../components/ui/Input";
 import { Select } from "../../components/ui/Select";
 import { Button } from "../../components/ui/Button";
 import { getClients } from "../../lib/db/clients";
 import { getClient } from "../../lib/db/clients";
+import { getLineTemplates } from "../../lib/db/lineTemplates";
+import type { LineTemplate } from "../../types/lineTemplate";
 import {
   createInvoice,
   getInvoice,
@@ -33,10 +35,10 @@ interface LineDraft {
 }
 
 const UNIT_OPTIONS = [
-  { value: "unite", label: "Unité" },
-  { value: "heure", label: "Heure" },
-  { value: "jour", label: "Jour" },
-  { value: "forfait", label: "Forfait" },
+  { value: "unite", label: "À l'unité" },
+  { value: "heure", label: "À l'heure" },
+  { value: "jour", label: "À la journée" },
+  { value: "forfait", label: "Au forfait" },
 ];
 
 const VAT_OPTIONS = [
@@ -67,6 +69,9 @@ export function InvoiceForm() {
     { key: makeKey(), description: "", quantity: 1, unit: "unite", unitPriceHt: 0, vatRate: 0 },
   ]);
   const [saving, setSaving] = useState(false);
+  const [templates, setTemplates] = useState<LineTemplate[]>([]);
+  const [showTemplateMenu, setShowTemplateMenu] = useState(false);
+  const templateMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!loaded) loadSettings();
@@ -74,6 +79,17 @@ export function InvoiceForm() {
 
   useEffect(() => {
     getClients().then(setClients);
+    getLineTemplates().then(setTemplates);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (templateMenuRef.current && !templateMenuRef.current.contains(e.target as Node)) {
+        setShowTemplateMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -130,6 +146,21 @@ export function InvoiceForm() {
 
   const removeLine = (key: string) => {
     setLines((prev) => prev.filter((l) => l.key !== key));
+  };
+
+  const addFromTemplate = (t: LineTemplate) => {
+    setLines((prev) => [
+      ...prev,
+      {
+        key: makeKey(),
+        description: t.description,
+        quantity: t.quantity,
+        unit: t.unit,
+        unitPriceHt: t.unitPriceHt,
+        vatRate: t.vatRate,
+      },
+    ]);
+    setShowTemplateMenu(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -258,7 +289,7 @@ export function InvoiceForm() {
             <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500">
               <div className="col-span-4">Description</div>
               <div className="col-span-1">Qte</div>
-              <div className="col-span-2">Unité</div>
+              <div className="col-span-2">Tarification</div>
               <div className="col-span-2">Prix HT</div>
               <div className="col-span-2">TVA</div>
               <div className="col-span-1"></div>
@@ -352,10 +383,42 @@ export function InvoiceForm() {
                 </div>
               </div>
             ))}
-            <Button type="button" variant="ghost" size="sm" onClick={addLine}>
-              <Plus size={16} className="mr-1" />
-              Ajouter une ligne
-            </Button>
+            <div className="flex gap-2">
+              <Button type="button" variant="ghost" size="sm" onClick={addLine}>
+                <Plus size={16} className="mr-1" />
+                Ajouter une ligne
+              </Button>
+              {templates.length > 0 && (
+                <div className="relative" ref={templateMenuRef}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowTemplateMenu(!showTemplateMenu)}
+                  >
+                    <FileText size={16} className="mr-1" />
+                    Utiliser un modèle
+                  </Button>
+                  {showTemplateMenu && (
+                    <div className="absolute left-0 top-full z-20 mt-1 min-w-[220px] rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                      {templates.map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => addFromTemplate(t)}
+                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                        >
+                          <span className="font-medium">{t.name}</span>
+                          <span className="ml-2 text-gray-400">
+                            {t.unitPriceHt.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} EUR
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="mt-6 flex justify-end">
