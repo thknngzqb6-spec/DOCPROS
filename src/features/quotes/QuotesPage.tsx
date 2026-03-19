@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
@@ -23,14 +23,30 @@ const statusConfig: Record<
 export function QuotesPage() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [filter, setFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     getQuotes().then(setQuotes);
   }, []);
 
-  const filtered =
-    filter === "all" ? quotes : quotes.filter((q) => q.status === filter);
+  const filtered = quotes
+    .filter((q) => filter === "all" || q.status === filter)
+    .filter((q) => {
+      if (!search.trim()) return true;
+      const s = search.toLowerCase();
+      return (
+        q.quoteNumber.toLowerCase().includes(s) ||
+        q.buyerName.toLowerCase().includes(s)
+      );
+    })
+    .filter((q) => {
+      if (dateFrom && q.issueDate < dateFrom) return false;
+      if (dateTo && q.issueDate > dateTo) return false;
+      return true;
+    });
 
   return (
     <div className="space-y-6">
@@ -66,9 +82,47 @@ export function QuotesPage() {
         ))}
       </div>
 
+      <div className="flex flex-wrap gap-3 items-end">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Rechercher par numéro ou client..."
+            className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+          />
+        </div>
+        <div className="flex gap-2 items-center">
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+          />
+          <span className="text-sm text-gray-400">&rarr;</span>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+          />
+        </div>
+        {(search || dateFrom || dateTo) && (
+          <button
+            onClick={() => { setSearch(""); setDateFrom(""); setDateTo(""); }}
+            className="text-sm text-gray-500 hover:text-gray-700 underline"
+          >
+            Effacer
+          </button>
+        )}
+      </div>
+
       <Card>
         {filtered.length === 0 ? (
-          <p className="text-sm text-gray-500">Aucun devis</p>
+          <p className="text-sm text-gray-500">
+            {quotes.length === 0 ? "Aucun devis" : "Aucun résultat"}
+          </p>
         ) : (
           <table className="w-full">
             <thead>

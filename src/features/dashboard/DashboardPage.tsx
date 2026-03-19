@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { FileText, FilePlus2, Users, AlertTriangle } from "lucide-react";
+import { FileText, FilePlus2, Users, AlertTriangle, TrendingUp, Send } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -16,6 +16,7 @@ import { Badge } from "../../components/ui/Badge";
 import { getInvoices } from "../../lib/db/invoices";
 import { getQuotes } from "../../lib/db/quotes";
 import { getClients } from "../../lib/db/clients";
+import { getDueRecurringInvoices } from "../../lib/db/recurringInvoices";
 import { formatCurrency } from "../../lib/utils/formatCurrency";
 import { formatDate } from "../../lib/utils/formatDate";
 import type { Invoice } from "../../types/invoice";
@@ -32,13 +33,15 @@ export function DashboardPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [clientCount, setClientCount] = useState(0);
+  const [dueRecurringCount, setDueRecurringCount] = useState(0);
 
   useEffect(() => {
-    Promise.all([getInvoices(), getQuotes(), getClients()]).then(
-      ([inv, quot, cli]) => {
+    Promise.all([getInvoices(), getQuotes(), getClients(), getDueRecurringInvoices()]).then(
+      ([inv, quot, cli, due]) => {
         setInvoices(inv);
         setQuotes(quot);
         setClientCount(cli.length);
+        setDueRecurringCount(due.length);
       }
     );
   }, []);
@@ -53,6 +56,30 @@ export function DashboardPage() {
   const overdueInvoices = pendingInvoices.filter(
     (i) => new Date(i.dueDate) < new Date()
   );
+
+  // YoY trend
+  const lastYear = currentYear - 1;
+  const revenueLastYear = invoices
+    .filter((i) => i.status === "paid" && i.issueDate.startsWith(String(lastYear)))
+    .reduce((sum, i) => sum + i.totalTtc, 0);
+  const yoyDelta = revenueLastYear > 0
+    ? Math.round(((revenueThisYear - revenueLastYear) / revenueLastYear) * 100)
+    : null;
+
+  // Devis stats
+  const pendingQuotes = quotes.filter((q) => q.status === "sent");
+  const quotesEligible = quotes.filter(
+    (q) => q.status === "sent" || q.status === "accepted" || q.status === "rejected"
+  );
+  const quotesAccepted = quotes.filter((q) => q.status === "accepted");
+  const conversionRate = quotesEligible.length > 0
+    ? Math.round((quotesAccepted.length / quotesEligible.length) * 100)
+    : null;
+
+  // Seuil auto-entrepreneur
+  const AE_THRESHOLD = 77700;
+  const thresholdPercent = Math.min(Math.round((revenueThisYear / AE_THRESHOLD) * 100), 100);
+  const showThresholdWarning = thresholdPercent >= 70;
 
   const MONTH_LABELS = [
     "Jan", "Fév", "Mar", "Avr", "Mai", "Jun",
@@ -95,6 +122,15 @@ export function DashboardPage() {
         </div>
       </div>
 
+      {dueRecurringCount > 0 && (
+        <div className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 flex items-center justify-between">
+          <div className="text-sm text-orange-800">
+            <span className="font-medium">{dueRecurringCount} facture(s) récurrente(s)</span> à générer.{" "}
+            <Link to="/recurring" className="underline font-medium">Voir les récurrences</Link>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <div className="flex items-center gap-3">
@@ -106,6 +142,11 @@ export function DashboardPage() {
               <p className="text-xl font-bold text-gray-900">
                 {formatCurrency(revenueThisYear)}
               </p>
+              {yoyDelta !== null && (
+                <p className={`text-xs font-medium ${yoyDelta >= 0 ? "text-green-600" : "text-red-500"}`}>
+                  {yoyDelta >= 0 ? "+" : ""}{yoyDelta}% vs {lastYear}
+                </p>
+              )}
             </div>
           </div>
         </Card>
@@ -150,6 +191,62 @@ export function DashboardPage() {
           </div>
         </Card>
       </div>
+
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <Card>
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-indigo-100 p-3">
+              <Send size={24} className="text-indigo-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Devis en attente</p>
+              <p className="text-xl font-bold text-gray-900">{pendingQuotes.length}</p>
+            </div>
+          </div>
+        </Card>
+        <Card>
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-teal-100 p-3">
+              <TrendingUp size={24} className="text-teal-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Taux de conversion devis</p>
+              <p className="text-xl font-bold text-gray-900">
+                {conversionRate !== null ? `${conversionRate}%` : "—"}
+              </p>
+              {quotesEligible.length > 0 && (
+                <p className="text-xs text-gray-400">
+                  {quotesAccepted.length} / {quotesEligible.length} devis
+                </p>
+              )}
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {showThresholdWarning && (
+        <div className={`rounded-lg border px-4 py-3 text-sm flex items-center gap-3 ${
+          thresholdPercent >= 90
+            ? "border-red-200 bg-red-50 text-red-800"
+            : "border-yellow-200 bg-yellow-50 text-yellow-800"
+        }`}>
+          <AlertTriangle size={18} className="shrink-0" />
+          <div className="flex-1">
+            <span className="font-medium">Seuil auto-entrepreneur :</span>{" "}
+            {thresholdPercent}% du plafond de {formatCurrency(AE_THRESHOLD)} atteint.
+            {thresholdPercent >= 90 && (
+              <span className="ml-1 font-medium">Consultez votre expert-comptable.</span>
+            )}
+          </div>
+          <div className="w-24 h-2 rounded-full bg-gray-200 overflow-hidden">
+            <div
+              className={`h-full rounded-full ${thresholdPercent >= 90 ? "bg-red-500" : "bg-yellow-500"}`}
+              style={{ width: `${thresholdPercent}%` }}
+            />
+          </div>
+          <span className="text-xs font-medium shrink-0">{thresholdPercent}%</span>
+        </div>
+      )}
 
       <Card title={`Évolution du CA ${currentYear}`}>
         {paidThisYear.length === 0 ? (

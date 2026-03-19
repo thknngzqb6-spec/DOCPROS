@@ -4,6 +4,7 @@ import {
   Users,
   FileText,
   FilePlus2,
+  RefreshCw,
   Settings,
 } from "lucide-react";
 
@@ -12,6 +13,7 @@ const navItems = [
   { to: "/clients", icon: Users, label: "Clients" },
   { to: "/invoices", icon: FileText, label: "Factures" },
   { to: "/quotes", icon: FilePlus2, label: "Devis" },
+  { to: "/recurring", icon: RefreshCw, label: "Récurrentes" },
   { to: "/settings", icon: Settings, label: "Parametres" },
 ];
 

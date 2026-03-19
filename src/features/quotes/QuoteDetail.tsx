@@ -8,14 +8,15 @@ import {
   XCircle,
   FileText,
   Send,
+  Copy,
 } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import { Modal } from "../../components/ui/Modal";
-import { getQuote, updateQuoteStatus } from "../../lib/db/quotes";
+import { getQuote, createQuote, updateQuoteStatus } from "../../lib/db/quotes";
 import { createInvoice } from "../../lib/db/invoices";
-import { getNextInvoiceNumber } from "../../lib/db/numbering";
+import { getNextInvoiceNumber, getNextQuoteNumber } from "../../lib/db/numbering";
 import { useSettingsStore } from "../../stores/useSettingsStore";
 import { buildQuotePdf } from "../../lib/pdf/quoteTemplate";
 import { downloadPdf } from "../../lib/pdf/pdfGenerator";
@@ -42,6 +43,7 @@ export function QuoteDetail() {
   const [quote, setQuote] = useState<QuoteWithLines | null>(null);
   const [showConvertModal, setShowConvertModal] = useState(false);
   const [converting, setConverting] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
 
   const load = () => {
     getQuote(Number(id)).then(setQuote);
@@ -72,6 +74,47 @@ export function QuoteDetail() {
   const handleMarkRejected = async () => {
     await updateQuoteStatus(quote.id, "rejected");
     load();
+  };
+
+  const handleDuplicate = async () => {
+    if (!settings) return;
+    setDuplicating(true);
+    const newNumber = await getNextQuoteNumber(settings.quotePrefix);
+    const today = toISODate(new Date());
+    const validityDate = toISODate(addDays(new Date(), 30));
+    const created = await createQuote({
+      quoteNumber: newNumber,
+      clientId: quote.clientId,
+      issueDate: today,
+      validityDate,
+      sellerName: quote.sellerName,
+      sellerSiret: quote.sellerSiret,
+      sellerAddress: quote.sellerAddress,
+      sellerVatNumber: quote.sellerVatNumber,
+      buyerName: quote.buyerName,
+      buyerAddress: quote.buyerAddress,
+      buyerSiret: quote.buyerSiret,
+      buyerIsProfessional: quote.buyerIsProfessional,
+      totalHt: quote.totalHt,
+      totalVat: quote.totalVat,
+      totalTtc: quote.totalTtc,
+      vatExempt: quote.vatExempt,
+      vatExemptionText: quote.vatExemptionText,
+      notes: quote.notes,
+      lines: quote.lines.map((l, i) => ({
+        description: l.description,
+        quantity: l.quantity,
+        unit: l.unit,
+        unitPriceHt: l.unitPriceHt,
+        vatRate: l.vatRate,
+        totalHt: l.totalHt,
+        totalVat: l.totalVat,
+        totalTtc: l.totalTtc,
+        sortOrder: i,
+      })),
+    });
+    setDuplicating(false);
+    navigate(`/quotes/${created.id}/edit`);
   };
 
   const handleExportPdf = async () => {
@@ -200,6 +243,10 @@ export function QuoteDetail() {
             Convertir en facture
           </Button>
         )}
+        <Button variant="secondary" size="sm" onClick={handleDuplicate} disabled={duplicating}>
+          <Copy size={16} className="mr-2" />
+          {duplicating ? "Duplication..." : "Dupliquer"}
+        </Button>
       </div>
 
       {quote.convertedInvoiceId && (

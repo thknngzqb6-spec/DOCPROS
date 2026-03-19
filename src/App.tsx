@@ -11,6 +11,7 @@ import { QuotesPage } from "./features/quotes/QuotesPage";
 import { QuoteForm } from "./features/quotes/QuoteForm";
 import { QuoteDetail } from "./features/quotes/QuoteDetail";
 import { SettingsPage } from "./features/settings/SettingsPage";
+import { RecurringPage } from "./features/recurring/RecurringPage";
 import { OnboardingWizard } from "./features/onboarding/OnboardingWizard";
 import { CguAcceptanceScreen } from "./features/cgu/CguAcceptanceScreen";
 import { useSettingsStore } from "./stores/useSettingsStore";
@@ -89,6 +90,7 @@ function AppContent() {
         <Route path="quotes/new" element={<QuoteForm />} />
         <Route path="quotes/:id" element={<QuoteDetail />} />
         <Route path="quotes/:id/edit" element={<QuoteForm />} />
+        <Route path="recurring" element={<RecurringPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
       {/* Redirect any unknown route */}

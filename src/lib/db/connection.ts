@@ -165,6 +165,19 @@ const MIGRATIONS = [
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
+  `CREATE TABLE IF NOT EXISTS recurring_invoices (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    client_id INTEGER NOT NULL REFERENCES clients(id),
+    frequency TEXT NOT NULL DEFAULT 'monthly' CHECK(frequency IN ('monthly','quarterly')),
+    next_due_date TEXT NOT NULL,
+    active INTEGER NOT NULL DEFAULT 1,
+    last_generated_invoice_id INTEGER REFERENCES invoices(id),
+    notes TEXT,
+    lines_json TEXT NOT NULL DEFAULT '[]',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
 ];
 
 export async function getDb(): Promise<Database> {

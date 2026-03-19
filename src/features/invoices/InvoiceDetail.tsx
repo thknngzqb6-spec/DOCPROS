@@ -7,6 +7,7 @@ import {
   CheckCircle,
   XCircle,
   Pencil,
+  Copy,
 } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
@@ -14,13 +15,16 @@ import { Badge } from "../../components/ui/Badge";
 import { Modal } from "../../components/ui/Modal";
 import {
   getInvoice,
+  createInvoice,
   finalizeInvoice,
   updateInvoiceStatus,
 } from "../../lib/db/invoices";
+import { getNextInvoiceNumber } from "../../lib/db/numbering";
 import { buildInvoicePdf } from "../../lib/pdf/invoiceTemplate";
 import { downloadPdf } from "../../lib/pdf/pdfGenerator";
 import { formatCurrency } from "../../lib/utils/formatCurrency";
-import { formatDate } from "../../lib/utils/formatDate";
+import { formatDate, toISODate } from "../../lib/utils/formatDate";
+import { addDays } from "date-fns";
 import { useSettingsStore } from "../../stores/useSettingsStore";
 import type { InvoiceWithLines } from "../../types/invoice";
 
@@ -40,6 +44,7 @@ export function InvoiceDetail() {
   const { settings, loadSettings } = useSettingsStore();
   const [invoice, setInvoice] = useState<InvoiceWithLines | null>(null);
   const [showFinalizeModal, setShowFinalizeModal] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
 
   const load = () => {
     getInvoice(Number(id)).then(setInvoice);
@@ -71,6 +76,52 @@ export function InvoiceDetail() {
   const handleCancel = async () => {
     await updateInvoiceStatus(invoice.id, "cancelled");
     load();
+  };
+
+  const handleDuplicate = async () => {
+    if (!settings) return;
+    setDuplicating(true);
+    const newNumber = await getNextInvoiceNumber(settings.invoicePrefix);
+    const today = toISODate(new Date());
+    const dueDate = toISODate(addDays(new Date(), invoice.paymentTermsDays));
+    const created = await createInvoice({
+      invoiceNumber: newNumber,
+      clientId: invoice.clientId,
+      issueDate: today,
+      dueDate,
+      serviceDate: null,
+      sellerName: invoice.sellerName,
+      sellerSiret: invoice.sellerSiret,
+      sellerAddress: invoice.sellerAddress,
+      sellerVatNumber: invoice.sellerVatNumber,
+      buyerName: invoice.buyerName,
+      buyerAddress: invoice.buyerAddress,
+      buyerSiret: invoice.buyerSiret,
+      buyerIsProfessional: invoice.buyerIsProfessional,
+      totalHt: invoice.totalHt,
+      totalVat: invoice.totalVat,
+      totalTtc: invoice.totalTtc,
+      vatExempt: invoice.vatExempt,
+      vatExemptionText: invoice.vatExemptionText,
+      paymentTermsDays: invoice.paymentTermsDays,
+      latePenaltyRate: invoice.latePenaltyRate,
+      latePenaltyText: invoice.latePenaltyText,
+      recoveryCostsText: invoice.recoveryCostsText,
+      notes: invoice.notes,
+      lines: invoice.lines.map((l, i) => ({
+        description: l.description,
+        quantity: l.quantity,
+        unit: l.unit,
+        unitPriceHt: l.unitPriceHt,
+        vatRate: l.vatRate,
+        totalHt: l.totalHt,
+        totalVat: l.totalVat,
+        totalTtc: l.totalTtc,
+        sortOrder: i,
+      })),
+    });
+    setDuplicating(false);
+    navigate(`/invoices/${created.id}/edit`);
   };
 
   const handleExportPdf = async () => {
@@ -148,6 +199,10 @@ export function InvoiceDetail() {
             Annuler
           </Button>
         )}
+        <Button variant="secondary" size="sm" onClick={handleDuplicate} disabled={duplicating}>
+          <Copy size={16} className="mr-2" />
+          {duplicating ? "Duplication..." : "Dupliquer"}
+        </Button>
       </div>
 
       {isFinalized && (
