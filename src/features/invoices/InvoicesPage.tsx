@@ -177,9 +177,14 @@ export function InvoicesPage() {
                     {formatCurrency(inv.totalTtc)}
                   </td>
                   <td className="py-3">
-                    <Badge variant={statusConfig[inv.status]?.variant}>
-                      {statusConfig[inv.status]?.label}
-                    </Badge>
+                    <div className="flex items-center gap-1.5">
+                      <Badge variant={statusConfig[inv.status]?.variant}>
+                        {statusConfig[inv.status]?.label}
+                      </Badge>
+                      {inv.status === "sent" && new Date(inv.dueDate) < new Date() && (
+                        <Badge variant="danger">En retard</Badge>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

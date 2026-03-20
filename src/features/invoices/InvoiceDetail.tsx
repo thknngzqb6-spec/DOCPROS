@@ -85,6 +85,10 @@ export function InvoiceDetail() {
 
   const isFinalized = !!invoice.finalizedAt;
   const isDraft = invoice.status === "draft";
+  const isOverdue = invoice.status === "sent" && new Date(invoice.dueDate) < new Date();
+  const daysLate = isOverdue
+    ? Math.floor((new Date().getTime() - new Date(invoice.dueDate).getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
 
   const handleFinalize = async () => {
     await finalizeInvoice(invoice.id);
@@ -278,6 +282,31 @@ export function InvoiceDetail() {
           </Link>
         )}
       </div>
+
+      {isOverdue && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-center justify-between">
+          <div className="text-sm text-red-800">
+            <span className="font-medium">Facture en retard</span> — échéance dépassée de{" "}
+            {daysLate} jour{daysLate > 1 ? "s" : ""} (échéance : {formatDate(invoice.dueDate)})
+          </div>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={async () => {
+              const client = await getClient(invoice.clientId);
+              const to = client?.email ? encodeURIComponent(client.email) : "";
+              const subject = encodeURIComponent(`Relance - Facture ${invoice.invoiceNumber}`);
+              const body = encodeURIComponent(
+                `Bonjour,\n\nSauf erreur de notre part, nous n'avons pas reçu le règlement de la facture ${invoice.invoiceNumber} d'un montant de ${formatCurrency(invoice.totalTtc)}.\n\nDate d'échéance : ${formatDate(invoice.dueDate)} (${daysLate} jour${daysLate > 1 ? "s" : ""} de retard)\n\nNous vous remercions de bien vouloir procéder au règlement dans les meilleurs délais.\n\nCordialement,\n${invoice.sellerName}`
+              );
+              await openUrl(`mailto:${to}?subject=${subject}&body=${body}`);
+            }}
+          >
+            <Mail size={14} className="mr-1" />
+            Relancer
+          </Button>
+        </div>
+      )}
 
       {isFinalized && (
         <div className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
