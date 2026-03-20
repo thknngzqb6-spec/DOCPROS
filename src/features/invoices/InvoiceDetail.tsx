@@ -10,6 +10,7 @@ import {
   Copy,
   Mail,
   RotateCcw,
+  FileCode,
 } from "lucide-react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { join, downloadDir } from "@tauri-apps/api/path";
@@ -34,6 +35,10 @@ import { formatCurrency } from "../../lib/utils/formatCurrency";
 import { formatDate, toISODate } from "../../lib/utils/formatDate";
 import { addDays } from "date-fns";
 import { useSettingsStore } from "../../stores/useSettingsStore";
+import {
+  generateFacturxXml,
+  downloadFacturxXml,
+} from "../../lib/export/facturxExport";
 import type { Invoice, InvoiceWithLines } from "../../types/invoice";
 
 const statusConfig: Record<
@@ -187,6 +192,18 @@ export function InvoiceDetail() {
     }
   };
 
+  const handleExportFacturx = async () => {
+    if (!settings) return;
+    try {
+      const xml = generateFacturxXml(invoice, settings);
+      const filename = `${invoice.invoiceNumber}_facturx.xml`;
+      await downloadFacturxXml(xml, filename);
+    } catch (err) {
+      console.error("Erreur export Factur-X :", err);
+      alert("Erreur lors de l'export Factur-X : " + String(err));
+    }
+  };
+
   const handleExportPdf = async () => {
     try {
       const legalInfo = settings ? {
@@ -234,6 +251,10 @@ export function InvoiceDetail() {
         <Button size="sm" onClick={handleExportPdf}>
           <Download size={16} className="mr-2" />
           Exporter PDF
+        </Button>
+        <Button variant="secondary" size="sm" onClick={handleExportFacturx}>
+          <FileCode size={16} className="mr-2" />
+          Factur-X
         </Button>
         <Button variant="secondary" size="sm" onClick={handleSendEmail}>
           <Mail size={16} className="mr-2" />
