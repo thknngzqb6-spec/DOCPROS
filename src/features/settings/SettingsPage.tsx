@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { ImagePlus, Trash2, Download, Upload, Plus, Pencil } from "lucide-react";
+import { ImagePlus, Trash2, Download, Upload, Plus, Pencil, FileText } from "lucide-react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { readFile } from "@tauri-apps/plugin-fs";
 import { Card } from "../../components/ui/Card";
@@ -11,6 +11,8 @@ import { Modal } from "../../components/ui/Modal";
 import { useSettingsStore } from "../../stores/useSettingsStore";
 import { isValidSiret } from "../../lib/validation/siretValidation";
 import { exportBackup, importBackup } from "../../lib/export/backupRestore";
+import { getInvoices } from "../../lib/db/invoices";
+import { generateFec, getFecFilename, downloadFec } from "../../lib/export/fecExport";
 import {
   getLineTemplates,
   createLineTemplate,
@@ -46,6 +48,75 @@ interface SettingsFormData {
   // Coordonnées bancaires
   iban: string;
   bic: string;
+}
+
+function FecExportSection({ siret }: { siret: string }) {
+  const currentYear = new Date().getFullYear();
+  const years = useMemo(() => {
+    const list: number[] = [];
+    for (let y = currentYear; y >= currentYear - 5; y--) {
+      list.push(y);
+    }
+    return list;
+  }, [currentYear]);
+
+  const [fecYear, setFecYear] = useState(currentYear);
+  const [fecStatus, setFecStatus] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportFec = async () => {
+    setIsExporting(true);
+    setFecStatus(null);
+    try {
+      const invoices = await getInvoices();
+      const result = generateFec(invoices, fecYear);
+      if (result.invoiceCount === 0) {
+        setFecStatus(`Aucune facture payée en ${fecYear}.`);
+        return;
+      }
+      const filename = getFecFilename(siret, fecYear);
+      await downloadFec(result.content, filename);
+      setFecStatus(
+        `Export réussi : ${result.invoiceCount} facture${result.invoiceCount > 1 ? "s" : ""}, ${result.entryCount} écritures.`
+      );
+    } catch (err) {
+      setFecStatus("Erreur : " + String(err));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-wrap items-end gap-3">
+      <div>
+        <label className="mb-1 block text-sm font-medium text-gray-700">
+          Exercice fiscal
+        </label>
+        <select
+          value={fecYear}
+          onChange={(e) => setFecYear(Number(e.target.value))}
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+        >
+          {years.map((y) => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
+      </div>
+      <Button
+        variant="secondary"
+        disabled={isExporting}
+        onClick={handleExportFec}
+      >
+        <FileText size={16} className="mr-2" />
+        {isExporting ? "Export..." : "Exporter FEC"}
+      </Button>
+      {fecStatus && (
+        <p className={`text-sm ${fecStatus.startsWith("Erreur") ? "text-red-600" : fecStatus.startsWith("Aucune") ? "text-yellow-600" : "text-green-600"}`}>
+          {fecStatus}
+        </p>
+      )}
+    </div>
+  );
 }
 
 export function SettingsPage() {
@@ -572,6 +643,14 @@ export function SettingsPage() {
           </div>
         </div>
       </Modal>
+
+      <Card title="Export comptable (FEC)">
+        <p className="mb-4 text-sm text-gray-600">
+          Exportez le Fichier des Ecritures Comptables pour votre exercice fiscal.
+          Format conforme à l'article L47 A-I du Livre des Procédures Fiscales.
+        </p>
+        <FecExportSection siret={settings?.siret ?? ""} />
+      </Card>
 
       <Card title="Sauvegarde et restauration">
         <p className="mb-4 text-sm text-gray-600">
