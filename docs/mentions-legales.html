@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mentions légales - DocPro</title>
+  <meta name="description" content="Mentions légales du logiciel DocPro - Logiciel de facturation pour indépendants.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav scrolled">
+    <div class="container nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">D</span>
+        DocPro
+      </a>
+      <div class="nav-links">
+        <a href="index.html#features">Fonctionnalités</a>
+        <a href="index.html#pricing">Tarif</a>
+        <a href="index.html#faq">FAQ</a>
+        <a href="index.html#download" class="btn btn-sm">Télécharger</a>
+      </div>
+      <button class="nav-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Content -->
+  <section class="legal-page">
+    <div class="container">
+      <div class="legal-content">
+        <h1>Mentions légales</h1>
+        <p class="legal-updated">Dernière mise à jour : 20 mars 2026</p>
+
+        <h2>1. Éditeur du site</h2>
+        <p>
+          Le site <strong>getdocpro.fr</strong> et le logiciel <strong>DocPro</strong> sont édités par :
+        </p>
+        <ul>
+          <li><strong>Éditeur :</strong> Alessandro (micro-entrepreneur)</li>
+          <li><strong>Email :</strong> <a href="mailto:contact@getdocpro.fr">contact@getdocpro.fr</a></li>
+          <li><strong>Site web :</strong> <a href="https://getdocpro.fr">https://getdocpro.fr</a></li>
+        </ul>
+
+        <h2>2. Hébergement</h2>
+        <p>
+          Le site est hébergé par :
+        </p>
+        <ul>
+          <li><strong>Hébergeur :</strong> GitHub, Inc.</li>
+          <li><strong>Adresse :</strong> 88 Colin P Kelly Jr St, San Francisco, CA 94107, États-Unis</li>
+          <li><strong>Site web :</strong> <a href="https://github.com" target="_blank" rel="noopener">https://github.com</a></li>
+        </ul>
+
+        <h2>3. Propriété intellectuelle</h2>
+        <p>
+          L'ensemble du contenu du site getdocpro.fr (textes, images, logos, icônes, logiciel) est protégé
+          par le droit d'auteur et le droit de la propriété intellectuelle. Toute reproduction, représentation,
+          modification, publication ou adaptation de tout ou partie des éléments du site est interdite sans
+          autorisation écrite préalable.
+        </p>
+
+        <h2>4. Limitation de responsabilité</h2>
+        <p>
+          L'éditeur s'efforce de fournir des informations aussi précises que possible sur le site.
+          Toutefois, il ne pourra être tenu responsable des omissions, des inexactitudes ou des carences
+          dans la mise à jour, qu'elles soient de son fait ou du fait de tiers.
+        </p>
+        <p>
+          Le logiciel DocPro est un outil d'aide à la facturation. L'utilisateur reste seul responsable
+          de la conformité de ses documents aux obligations légales et fiscales en vigueur.
+        </p>
+
+        <h2>5. Liens hypertextes</h2>
+        <p>
+          Le site peut contenir des liens vers d'autres sites. L'éditeur ne peut être tenu responsable
+          du contenu de ces sites externes.
+        </p>
+
+        <h2>6. Droit applicable</h2>
+        <p>
+          Les présentes mentions légales sont soumises au droit français. En cas de litige, les tribunaux
+          français seront seuls compétents.
+        </p>
+
+        <div class="legal-back">
+          <a href="index.html" class="btn btn-outline">← Retour à l'accueil</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo">
+          <span class="logo-icon">D</span>
+          DocPro
+        </a>
+        <p>Logiciel de facturation simple pour indépendants et PME.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Produit</h4>
+          <a href="index.html#features">Fonctionnalités</a>
+          <a href="index.html#pricing">Tarif</a>
+          <a href="index.html#download">Télécharger</a>
+        </div>
+        <div class="footer-col">
+          <h4>Légal</h4>
+          <a href="mentions-legales.html">Mentions légales</a>
+          <a href="cgu.html">CGU</a>
+          <a href="confidentialite.html">Politique de confidentialité</a>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <a href="mailto:contact@getdocpro.fr">contact@getdocpro.fr</a>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 DocPro. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const toggle = document.querySelector('.nav-toggle');
+    const links = document.querySelector('.nav-links');
+    toggle.addEventListener('click', () => {
+      links.classList.toggle('open');
+      toggle.classList.toggle('open');
+    });
+  </script>
+
+</body>
+</html>
