@@ -80,6 +80,7 @@ export function OnboardingWizard() {
         defaultLatePenaltyRate: 3.0,
         invoicePrefix: "F",
         quotePrefix: "D",
+        creditNotePrefix: "AV",
         logo: null,
         legalForm: null,
         rcsNumber: null,

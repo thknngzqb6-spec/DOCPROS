@@ -1,12 +1,15 @@
 import type { LineItem } from "./lineItem";
 
 export type InvoiceStatus = "draft" | "sent" | "paid" | "cancelled";
+export type InvoiceType = "invoice" | "credit_note";
 
 export interface Invoice {
   id: number;
   invoiceNumber: string;
   clientId: number;
   status: InvoiceStatus;
+  type: InvoiceType;
+  linkedInvoiceId: number | null;
   issueDate: string;
   dueDate: string;
   serviceDate: string | null;

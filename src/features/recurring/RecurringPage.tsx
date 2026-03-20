@@ -23,7 +23,7 @@ import {
   calculateDocumentTotals,
 } from "../../lib/utils/calculations";
 import { formatDate, toISODate } from "../../lib/utils/formatDate";
-import { addDays, addMonths, addQuarters, parseISO } from "date-fns";
+import { addDays, addMonths, addQuarters, addYears, parseISO } from "date-fns";
 import type { Client } from "../../types/client";
 import type {
   RecurringInvoiceWithLines,
@@ -33,8 +33,9 @@ import type {
 } from "../../types/recurringInvoice";
 
 const FREQ_OPTIONS = [
-  { value: "monthly", label: "Mensuel" },
-  { value: "quarterly", label: "Trimestriel" },
+  { value: "monthly", label: "Mensuelle" },
+  { value: "quarterly", label: "Trimestrielle" },
+  { value: "yearly", label: "Annuelle" },
 ];
 
 const UNIT_OPTIONS = [
@@ -288,7 +289,9 @@ export function RecurringPage() {
     const nextDate =
       item.frequency === "monthly"
         ? addMonths(currentDue, 1)
-        : addQuarters(currentDue, 1);
+        : item.frequency === "quarterly"
+          ? addQuarters(currentDue, 1)
+          : addYears(currentDue, 1);
     await markRecurringGenerated(item.id, created.id, toISODate(nextDate));
 
     setGenerating(null);
@@ -342,8 +345,10 @@ export function RecurringPage() {
                     </td>
                     <td className="py-3 text-sm text-gray-600">
                       {item.frequency === "monthly"
-                        ? "Mensuel"
-                        : "Trimestriel"}
+                        ? "Mensuelle"
+                        : item.frequency === "quarterly"
+                          ? "Trimestrielle"
+                          : "Annuelle"}
                     </td>
                     <td className="py-3 text-sm text-gray-600">
                       <span

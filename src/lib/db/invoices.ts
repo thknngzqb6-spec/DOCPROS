@@ -52,6 +52,24 @@ export async function getInvoice(id: number): Promise<InvoiceWithLines | null> {
   };
 }
 
+export async function getInvoicesByClientId(clientId: number): Promise<Invoice[]> {
+  const db = await getDb();
+  const rows = await db.select<InvoiceRow[]>(
+    "SELECT * FROM invoices WHERE client_id = $1 ORDER BY issue_date DESC, id DESC",
+    [clientId]
+  );
+  return rows.map(toInvoice);
+}
+
+export async function getCreditNotesByInvoiceId(invoiceId: number): Promise<Invoice[]> {
+  const db = await getDb();
+  const rows = await db.select<InvoiceRow[]>(
+    "SELECT * FROM invoices WHERE linked_invoice_id = $1 AND type = 'credit_note' ORDER BY issue_date DESC",
+    [invoiceId]
+  );
+  return rows.map(toInvoice);
+}
+
 export interface InvoiceInput {
   invoiceNumber: string;
   clientId: number;
@@ -76,6 +94,8 @@ export interface InvoiceInput {
   latePenaltyText: string;
   recoveryCostsText: string;
   notes: string | null;
+  type?: "invoice" | "credit_note";
+  linkedInvoiceId?: number | null;
   lines: Omit<LineItem, "id">[];
 }
 
@@ -113,6 +133,9 @@ export async function createInvoice(input: InvoiceInput): Promise<InvoiceWithLin
   const db = await getDb();
   const now = new Date().toISOString();
 
+  const invoiceType = input.type ?? "invoice";
+  const linkedId = input.linkedInvoiceId ?? null;
+
   const result = await db.execute(
     `INSERT INTO invoices (
       invoice_number, client_id, status, issue_date, due_date, service_date,
@@ -121,7 +144,7 @@ export async function createInvoice(input: InvoiceInput): Promise<InvoiceWithLin
       total_ht, total_vat, total_ttc,
       vat_exempt, vat_exemption_text,
       payment_terms_days, late_penalty_rate, late_penalty_text, recovery_costs_text,
-      notes, created_at, updated_at
+      notes, type, linked_invoice_id, created_at, updated_at
     ) VALUES (
       $1, $2, 'draft', $3, $4, $5,
       $6, $7, $8, $9,
@@ -129,7 +152,7 @@ export async function createInvoice(input: InvoiceInput): Promise<InvoiceWithLin
       $14, $15, $16,
       $17, $18,
       $19, $20, $21, $22,
-      $23, $24, $25
+      $23, $24, $25, $26, $27
     )`,
     [
       input.invoiceNumber,
@@ -155,6 +178,8 @@ export async function createInvoice(input: InvoiceInput): Promise<InvoiceWithLin
       input.latePenaltyText,
       input.recoveryCostsText,
       input.notes,
+      invoiceType,
+      linkedId,
       now,
       now,
     ]
@@ -168,6 +193,8 @@ export async function createInvoice(input: InvoiceInput): Promise<InvoiceWithLin
     invoiceNumber: input.invoiceNumber,
     clientId: input.clientId,
     status: "draft",
+    type: invoiceType,
+    linkedInvoiceId: linkedId,
     issueDate: input.issueDate,
     dueDate: input.dueDate,
     serviceDate: input.serviceDate,

@@ -9,12 +9,18 @@ import {
   FileText,
   Send,
   Copy,
+  Mail,
 } from "lucide-react";
+import { openUrl } from "@tauri-apps/plugin-opener";
+import { join, downloadDir } from "@tauri-apps/api/path";
+import { writeFile } from "@tauri-apps/plugin-fs";
+import pdfMake from "pdfmake/build/pdfmake";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import { Modal } from "../../components/ui/Modal";
 import { getQuote, createQuote, updateQuoteStatus } from "../../lib/db/quotes";
+import { getClient } from "../../lib/db/clients";
 import { createInvoice } from "../../lib/db/invoices";
 import { getNextInvoiceNumber, getNextQuoteNumber } from "../../lib/db/numbering";
 import { useSettingsStore } from "../../stores/useSettingsStore";
@@ -74,6 +80,38 @@ export function QuoteDetail() {
   const handleMarkRejected = async () => {
     await updateQuoteStatus(quote.id, "rejected");
     load();
+  };
+
+  const handleSendEmail = async () => {
+    try {
+      // Save PDF to Downloads folder
+      const legalInfo = settings ? {
+        legalForm: settings.legalForm,
+        rcsNumber: settings.rcsNumber,
+        shareCapital: settings.shareCapital,
+      } : undefined;
+      const doc = buildQuotePdf(quote, settings?.logo, legalInfo);
+      const buffer = await pdfMake.createPdf(doc).getBuffer();
+      const downloads = await downloadDir();
+      const pdfFilename = `${quote.quoteNumber}.pdf`;
+      const pdfPath = await join(downloads, pdfFilename);
+      await writeFile(pdfPath, buffer);
+
+      // Get client email
+      const client = await getClient(quote.clientId);
+      const to = client?.email ? encodeURIComponent(client.email) : "";
+
+      // Open email client
+      const subject = encodeURIComponent(`Devis ${quote.quoteNumber}`);
+      const body = encodeURIComponent(
+        `Bonjour,\n\nVeuillez trouver ci-joint le devis ${quote.quoteNumber} d'un montant de ${formatCurrency(quote.totalTtc)}.\n\nDate d'émission : ${formatDate(quote.issueDate)}\nValable jusqu'au : ${formatDate(quote.validityDate)}\n\nLe fichier PDF a été enregistré dans votre dossier Téléchargements : ${pdfFilename}\nMerci de le joindre à cet email.\n\nCordialement,\n${quote.sellerName}`
+      );
+      const mailto = `mailto:${to}?subject=${subject}&body=${body}`;
+      await openUrl(mailto);
+    } catch (err) {
+      console.error("Erreur envoi email :", err);
+      alert("Erreur : " + String(err));
+    }
   };
 
   const handleDuplicate = async () => {
@@ -210,6 +248,10 @@ export function QuoteDetail() {
         <Button size="sm" onClick={handleExportPdf}>
           <Download size={16} className="mr-2" />
           Exporter PDF
+        </Button>
+        <Button variant="secondary" size="sm" onClick={handleSendEmail}>
+          <Mail size={16} className="mr-2" />
+          Envoyer par email
         </Button>
         {isDraft && (
           <>

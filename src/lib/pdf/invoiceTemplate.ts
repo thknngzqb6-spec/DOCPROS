@@ -15,8 +15,11 @@ export interface SellerLegalInfo {
 export function buildInvoicePdf(
   invoice: InvoiceWithLines,
   logo?: string | null,
-  legalInfo?: SellerLegalInfo
+  legalInfo?: SellerLegalInfo,
+  linkedInvoiceNumber?: string | null
 ): TDocumentDefinitions {
+  const isCreditNote = invoice.type === "credit_note";
+  const docTitle = isCreditNote ? "AVOIR" : "FACTURE";
   const vatBreakdown = groupVatByRate(invoice.lines);
   // Format number with regular space instead of non-breaking spaces (fixes font rendering)
   const fmt = (n: number) =>
@@ -85,8 +88,11 @@ export function buildInvoicePdf(
           {
             width: "auto",
             stack: [
-              { text: "FACTURE", style: "docTitle" },
+              { text: docTitle, style: "docTitle" },
               { text: invoice.invoiceNumber, style: "docNumber" },
+              ...(isCreditNote && linkedInvoiceNumber
+                ? [{ text: `Ref. facture : ${linkedInvoiceNumber}`, fontSize: 9, color: "#6b7280" }]
+                : []),
             ],
             alignment: "right" as const,
           },

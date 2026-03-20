@@ -37,6 +37,7 @@ interface SettingsFormData {
   defaultLatePenaltyRate: string;
   invoicePrefix: string;
   quotePrefix: string;
+  creditNotePrefix: string;
   // Mentions légales
   legalForm: string;
   rcsNumber: string;
@@ -147,6 +148,7 @@ export function SettingsPage() {
         defaultLatePenaltyRate: String(settings.defaultLatePenaltyRate),
         invoicePrefix: settings.invoicePrefix,
         quotePrefix: settings.quotePrefix,
+        creditNotePrefix: settings.creditNotePrefix,
         legalForm: settings.legalForm ?? "",
         rcsNumber: settings.rcsNumber ?? "",
         shareCapital: settings.shareCapital ? String(settings.shareCapital) : "",
@@ -175,6 +177,7 @@ export function SettingsPage() {
       defaultLatePenaltyRate: parseFloat(data.defaultLatePenaltyRate),
       invoicePrefix: data.invoicePrefix,
       quotePrefix: data.quotePrefix,
+      creditNotePrefix: data.creditNotePrefix,
       logo,
       legalForm: data.legalForm || null,
       rcsNumber: data.rcsNumber || null,
@@ -430,9 +433,14 @@ export function SettingsPage() {
               {...register("quotePrefix")}
               placeholder="D"
             />
+            <Input
+              label="Préfixe avoirs"
+              {...register("creditNotePrefix")}
+              placeholder="AV"
+            />
           </div>
           <p className="mt-2 text-xs text-gray-500">
-            Exemple : F-2026-0001, D-2026-0001
+            Exemple : F-2026-0001, D-2026-0001, AV-2026-0001
           </p>
         </Card>
 

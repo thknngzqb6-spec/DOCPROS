@@ -16,6 +16,7 @@ export interface Settings {
   defaultLatePenaltyRate: number;
   invoicePrefix: string;
   quotePrefix: string;
+  creditNotePrefix: string;
   logo: string | null;
   // Mentions légales supplémentaires
   legalForm: string | null; // EI, EIRL, SARL, SAS, etc.

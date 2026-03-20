@@ -33,7 +33,7 @@ export async function saveSettings(
       address, postal_code, city, email, phone,
       vat_number, is_vat_exempt, vat_exemption_text,
       default_payment_terms_days, default_late_penalty_rate,
-      invoice_prefix, quote_prefix, logo,
+      invoice_prefix, quote_prefix, credit_note_prefix, logo,
       legal_form, rcs_number, share_capital, payment_methods,
       iban, bic, cgu_accepted_at
     ) VALUES (
@@ -41,9 +41,9 @@ export async function saveSettings(
       $5, $6, $7, $8, $9,
       $10, $11, $12,
       $13, $14,
-      $15, $16, $17,
-      $18, $19, $20, $21,
-      $22, $23, $24
+      $15, $16, $17, $18,
+      $19, $20, $21, $22,
+      $23, $24, $25
     )`,
     [
       settings.businessName,
@@ -62,6 +62,7 @@ export async function saveSettings(
       settings.defaultLatePenaltyRate,
       settings.invoicePrefix,
       settings.quotePrefix,
+      settings.creditNotePrefix,
       settings.logo,
       settings.legalForm,
       settings.rcsNumber,

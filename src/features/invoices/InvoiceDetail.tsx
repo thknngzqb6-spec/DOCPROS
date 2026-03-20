@@ -8,7 +8,13 @@ import {
   XCircle,
   Pencil,
   Copy,
+  Mail,
+  RotateCcw,
 } from "lucide-react";
+import { openUrl } from "@tauri-apps/plugin-opener";
+import { join, downloadDir } from "@tauri-apps/api/path";
+import { writeFile } from "@tauri-apps/plugin-fs";
+import pdfMake from "pdfmake/build/pdfmake";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
@@ -18,7 +24,9 @@ import {
   createInvoice,
   finalizeInvoice,
   updateInvoiceStatus,
+  getCreditNotesByInvoiceId,
 } from "../../lib/db/invoices";
+import { getClient } from "../../lib/db/clients";
 import { getNextInvoiceNumber } from "../../lib/db/numbering";
 import { buildInvoicePdf } from "../../lib/pdf/invoiceTemplate";
 import { downloadPdf } from "../../lib/pdf/pdfGenerator";
@@ -26,7 +34,7 @@ import { formatCurrency } from "../../lib/utils/formatCurrency";
 import { formatDate, toISODate } from "../../lib/utils/formatDate";
 import { addDays } from "date-fns";
 import { useSettingsStore } from "../../stores/useSettingsStore";
-import type { InvoiceWithLines } from "../../types/invoice";
+import type { Invoice, InvoiceWithLines } from "../../types/invoice";
 
 const statusConfig: Record<
   string,
@@ -43,11 +51,27 @@ export function InvoiceDetail() {
   const navigate = useNavigate();
   const { settings, loadSettings } = useSettingsStore();
   const [invoice, setInvoice] = useState<InvoiceWithLines | null>(null);
+  const [linkedInvoiceNumber, setLinkedInvoiceNumber] = useState<string | null>(null);
+  const [creditNotes, setCreditNotes] = useState<Invoice[]>([]);
   const [showFinalizeModal, setShowFinalizeModal] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
 
   const load = () => {
-    getInvoice(Number(id)).then(setInvoice);
+    getInvoice(Number(id)).then((inv) => {
+      setInvoice(inv);
+      if (inv?.linkedInvoiceId) {
+        getInvoice(inv.linkedInvoiceId).then((linked) => {
+          setLinkedInvoiceNumber(linked?.invoiceNumber ?? null);
+        });
+      } else {
+        setLinkedInvoiceNumber(null);
+      }
+      if (inv?.type === "invoice") {
+        getCreditNotesByInvoiceId(inv.id).then(setCreditNotes);
+      } else {
+        setCreditNotes([]);
+      }
+    });
   };
 
   useEffect(() => {
@@ -124,6 +148,41 @@ export function InvoiceDetail() {
     navigate(`/invoices/${created.id}/edit`);
   };
 
+  const handleSendEmail = async () => {
+    try {
+      // Save PDF to Downloads folder
+      const legalInfo = settings ? {
+        legalForm: settings.legalForm,
+        rcsNumber: settings.rcsNumber,
+        shareCapital: settings.shareCapital,
+        paymentMethods: settings.paymentMethods,
+        iban: settings.iban,
+        bic: settings.bic,
+      } : undefined;
+      const doc = buildInvoicePdf(invoice, settings?.logo, legalInfo, linkedInvoiceNumber);
+      const buffer = await pdfMake.createPdf(doc).getBuffer();
+      const downloads = await downloadDir();
+      const pdfFilename = `${invoice.invoiceNumber}.pdf`;
+      const pdfPath = await join(downloads, pdfFilename);
+      await writeFile(pdfPath, buffer);
+
+      // Get client email
+      const client = await getClient(invoice.clientId);
+      const to = client?.email ? encodeURIComponent(client.email) : "";
+
+      // Open email client
+      const subject = encodeURIComponent(`Facture ${invoice.invoiceNumber}`);
+      const body = encodeURIComponent(
+        `Bonjour,\n\nVeuillez trouver ci-joint la facture ${invoice.invoiceNumber} d'un montant de ${formatCurrency(invoice.totalTtc)}.\n\nDate d'émission : ${formatDate(invoice.issueDate)}\nÉchéance : ${formatDate(invoice.dueDate)}\n\nLe fichier PDF a été enregistré dans votre dossier Téléchargements : ${pdfFilename}\nMerci de le joindre à cet email.\n\nCordialement,\n${invoice.sellerName}`
+      );
+      const mailto = `mailto:${to}?subject=${subject}&body=${body}`;
+      await openUrl(mailto);
+    } catch (err) {
+      console.error("Erreur envoi email :", err);
+      alert("Erreur : " + String(err));
+    }
+  };
+
   const handleExportPdf = async () => {
     try {
       const legalInfo = settings ? {
@@ -134,7 +193,7 @@ export function InvoiceDetail() {
         iban: settings.iban,
         bic: settings.bic,
       } : undefined;
-      const doc = buildInvoicePdf(invoice, settings?.logo, legalInfo);
+      const doc = buildInvoicePdf(invoice, settings?.logo, legalInfo, linkedInvoiceNumber);
       await downloadPdf(doc, `${invoice.invoiceNumber}.pdf`);
     } catch (err) {
       console.error("Erreur export PDF :", err);
@@ -153,10 +212,13 @@ export function InvoiceDetail() {
         </button>
         <div className="flex-1">
           <h2 className="text-2xl font-bold text-gray-900">
-            Facture {invoice.invoiceNumber}
+            {invoice.type === "credit_note" ? "Avoir" : "Facture"} {invoice.invoiceNumber}
           </h2>
           <p className="text-sm text-gray-500">
             {invoice.buyerName} - {formatDate(invoice.issueDate)}
+            {linkedInvoiceNumber && (
+              <span className="ml-2 text-gray-400">(Ref. {linkedInvoiceNumber})</span>
+            )}
           </p>
         </div>
         <Badge variant={statusConfig[invoice.status]?.variant}>
@@ -168,6 +230,10 @@ export function InvoiceDetail() {
         <Button size="sm" onClick={handleExportPdf}>
           <Download size={16} className="mr-2" />
           Exporter PDF
+        </Button>
+        <Button variant="secondary" size="sm" onClick={handleSendEmail}>
+          <Mail size={16} className="mr-2" />
+          Envoyer par email
         </Button>
         {isDraft && (
           <>
@@ -203,6 +269,14 @@ export function InvoiceDetail() {
           <Copy size={16} className="mr-2" />
           {duplicating ? "Duplication..." : "Dupliquer"}
         </Button>
+        {invoice.type === "invoice" && (invoice.status === "sent" || invoice.status === "paid") && (
+          <Link to={`/invoices/${invoice.id}/credit-note`}>
+            <Button variant="secondary" size="sm">
+              <RotateCcw size={16} className="mr-2" />
+              Creer un avoir
+            </Button>
+          </Link>
+        )}
       </div>
 
       {isFinalized && (
@@ -330,6 +404,50 @@ export function InvoiceDetail() {
           {invoice.buyerIsProfessional && <p>{invoice.recoveryCostsText}</p>}
         </div>
       </Card>
+
+      {creditNotes.length > 0 && (
+        <Card title="Avoirs liés">
+          <div className="space-y-2">
+            {creditNotes.map((cn) => (
+              <Link
+                key={cn.id}
+                to={`/invoices/${cn.id}`}
+                className="flex items-center justify-between rounded-lg p-2 hover:bg-gray-50"
+              >
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{cn.invoiceNumber}</p>
+                  <p className="text-xs text-gray-500">{formatDate(cn.issueDate)}</p>
+                </div>
+                <span className="text-sm font-medium text-gray-900">
+                  -{formatCurrency(cn.totalTtc)}
+                </span>
+              </Link>
+            ))}
+          </div>
+          <div className="mt-4 flex justify-end border-t border-gray-200 pt-3">
+            <div className="w-64 space-y-1 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Facture</span>
+                <span className="font-medium">{formatCurrency(invoice.totalTtc)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Avoirs</span>
+                <span className="font-medium text-red-600">
+                  -{formatCurrency(creditNotes.reduce((sum, cn) => sum + cn.totalTtc, 0))}
+                </span>
+              </div>
+              <div className="flex justify-between border-t border-gray-200 pt-1 font-bold">
+                <span>Solde net</span>
+                <span>
+                  {formatCurrency(
+                    invoice.totalTtc - creditNotes.reduce((sum, cn) => sum + cn.totalTtc, 0)
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
 
       <Modal
         isOpen={showFinalizeModal}

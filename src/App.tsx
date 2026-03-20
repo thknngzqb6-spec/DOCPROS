@@ -4,6 +4,7 @@ import { AppLayout } from "./components/layout/AppLayout";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { ClientsPage } from "./features/clients/ClientsPage";
 import { ClientForm } from "./features/clients/ClientForm";
+import { ClientDetail } from "./features/clients/ClientDetail";
 import { InvoicesPage } from "./features/invoices/InvoicesPage";
 import { InvoiceForm } from "./features/invoices/InvoiceForm";
 import { InvoiceDetail } from "./features/invoices/InvoiceDetail";
@@ -81,11 +82,13 @@ function AppContent() {
         <Route index element={<DashboardPage />} />
         <Route path="clients" element={<ClientsPage />} />
         <Route path="clients/new" element={<ClientForm />} />
-        <Route path="clients/:id" element={<ClientForm />} />
+        <Route path="clients/:id" element={<ClientDetail />} />
+        <Route path="clients/:id/edit" element={<ClientForm />} />
         <Route path="invoices" element={<InvoicesPage />} />
         <Route path="invoices/new" element={<InvoiceForm />} />
         <Route path="invoices/:id" element={<InvoiceDetail />} />
         <Route path="invoices/:id/edit" element={<InvoiceForm />} />
+        <Route path="invoices/:id/credit-note" element={<InvoiceForm />} />
         <Route path="quotes" element={<QuotesPage />} />
         <Route path="quotes/new" element={<QuoteForm />} />
         <Route path="quotes/:id" element={<QuoteDetail />} />

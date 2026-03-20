@@ -1,4 +1,4 @@
-export type RecurringFrequency = "monthly" | "quarterly";
+export type RecurringFrequency = "monthly" | "quarterly" | "yearly";
 
 export interface RecurringInvoice {
   id: number;

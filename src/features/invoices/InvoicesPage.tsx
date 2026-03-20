@@ -163,6 +163,9 @@ export function InvoicesPage() {
                 >
                   <td className="py-3 text-sm font-medium text-gray-900">
                     {inv.invoiceNumber}
+                    {inv.type === "credit_note" && (
+                      <span className="ml-2 inline-block rounded bg-orange-100 px-1.5 py-0.5 text-xs font-medium text-orange-700">Avoir</span>
+                    )}
                   </td>
                   <td className="py-3 text-sm text-gray-600">
                     {inv.buyerName}

@@ -22,6 +22,7 @@ const DEFAULT_SETTINGS: Omit<Settings, "id"> = {
   defaultLatePenaltyRate: 3.0,
   invoicePrefix: "F",
   quotePrefix: "D",
+  creditNotePrefix: "AV",
   logo: null,
   legalForm: null,
   rcsNumber: null,

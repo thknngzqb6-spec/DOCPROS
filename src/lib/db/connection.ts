@@ -165,11 +165,14 @@ const MIGRATIONS = [
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
+  "ALTER TABLE invoices ADD COLUMN type TEXT NOT NULL DEFAULT 'invoice'",
+  "ALTER TABLE invoices ADD COLUMN linked_invoice_id INTEGER REFERENCES invoices(id)",
+  "ALTER TABLE settings ADD COLUMN credit_note_prefix TEXT NOT NULL DEFAULT 'AV'",
   `CREATE TABLE IF NOT EXISTS recurring_invoices (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     client_id INTEGER NOT NULL REFERENCES clients(id),
-    frequency TEXT NOT NULL DEFAULT 'monthly' CHECK(frequency IN ('monthly','quarterly')),
+    frequency TEXT NOT NULL DEFAULT 'monthly' CHECK(frequency IN ('monthly','quarterly','yearly')),
     next_due_date TEXT NOT NULL,
     active INTEGER NOT NULL DEFAULT 1,
     last_generated_invoice_id INTEGER REFERENCES invoices(id),

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Plus, Trash2, FileText } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Input } from "../../components/ui/Input";
@@ -55,7 +55,9 @@ function makeKey() {
 export function InvoiceForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const isEdit = !!id;
+  const location = useLocation();
+  const isCreditNote = location.pathname.endsWith("/credit-note");
+  const isEdit = !!id && !isCreditNote;
   const { settings, loaded, loadSettings } = useSettingsStore();
 
   const [clients, setClients] = useState<Client[]>([]);
@@ -95,9 +97,10 @@ export function InvoiceForm() {
   useEffect(() => {
     if (settings && !isEdit) {
       setPaymentTermsDays(settings.defaultPaymentTermsDays);
-      getNextInvoiceNumber(settings.invoicePrefix).then(setInvoiceNumber);
+      const prefix = isCreditNote ? settings.creditNotePrefix : settings.invoicePrefix;
+      getNextInvoiceNumber(prefix).then(setInvoiceNumber);
     }
-  }, [settings, isEdit]);
+  }, [settings, isEdit, isCreditNote]);
 
   useEffect(() => {
     if (isEdit) {
@@ -122,7 +125,26 @@ export function InvoiceForm() {
         }
       });
     }
-  }, [id, isEdit]);
+    if (isCreditNote && id) {
+      getInvoice(Number(id)).then((source) => {
+        if (source) {
+          setClientId(source.clientId);
+          setServiceDate(source.serviceDate ?? "");
+          setNotes(`Avoir sur facture ${source.invoiceNumber}`);
+          setLines(
+            source.lines.map((l) => ({
+              key: makeKey(),
+              description: l.description,
+              quantity: l.quantity,
+              unit: l.unit,
+              unitPriceHt: l.unitPriceHt,
+              vatRate: l.vatRate,
+            }))
+          );
+        }
+      });
+    }
+  }, [id, isEdit, isCreditNote]);
 
   const computedLines = lines.map((l) => ({
     ...l,
@@ -206,6 +228,8 @@ export function InvoiceForm() {
       recoveryCostsText:
         "Indemnité forfaitaire pour frais de recouvrement : 40 EUR",
       notes: notes || null,
+      type: isCreditNote ? "credit_note" : "invoice",
+      linkedInvoiceId: isCreditNote && id ? Number(id) : null,
       lines: computedLines.map((l, i) => ({
         description: l.description,
         quantity: l.quantity,
@@ -235,7 +259,7 @@ export function InvoiceForm() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">
-        {isEdit ? "Modifier la facture" : "Nouvelle facture"}
+        {isCreditNote ? "Nouvel avoir" : isEdit ? "Modifier la facture" : "Nouvelle facture"}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card title="Informations générales">
@@ -482,9 +506,11 @@ export function InvoiceForm() {
           <Button type="submit" disabled={saving || clientId === ""}>
             {saving
               ? "Enregistrement..."
-              : isEdit
-                ? "Modifier"
-                : "Créer la facture"}
+              : isCreditNote
+                ? "Créer l'avoir"
+                : isEdit
+                  ? "Modifier"
+                  : "Créer la facture"}
           </Button>
         </div>
       </form>

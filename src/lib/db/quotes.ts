@@ -52,6 +52,15 @@ export async function getQuote(id: number): Promise<QuoteWithLines | null> {
   };
 }
 
+export async function getQuotesByClientId(clientId: number): Promise<Quote[]> {
+  const db = await getDb();
+  const rows = await db.select<QuoteRow[]>(
+    "SELECT * FROM quotes WHERE client_id = $1 ORDER BY issue_date DESC, id DESC",
+    [clientId]
+  );
+  return rows.map(toQuote);
+}
+
 export interface QuoteInput {
   quoteNumber: string;
   clientId: number;
