@@ -246,3 +246,8 @@ export async function updateQuoteStatus(
     [status, new Date().toISOString(), id]
   );
 }
+
+export async function deleteQuote(id: number): Promise<void> {
+  const db = await getDb();
+  await db.execute("DELETE FROM quotes WHERE id = $1", [id]);
+}

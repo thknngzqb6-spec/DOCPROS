@@ -11,6 +11,7 @@ import {
   Mail,
   RotateCcw,
   FileCode,
+  Trash2,
 } from "lucide-react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { join, downloadDir } from "@tauri-apps/api/path";
@@ -25,6 +26,7 @@ import {
   createInvoice,
   finalizeInvoice,
   updateInvoiceStatus,
+  deleteInvoice,
   getCreditNotesByInvoiceId,
 } from "../../lib/db/invoices";
 import { getClient } from "../../lib/db/clients";
@@ -59,6 +61,7 @@ export function InvoiceDetail() {
   const [linkedInvoiceNumber, setLinkedInvoiceNumber] = useState<string | null>(null);
   const [creditNotes, setCreditNotes] = useState<Invoice[]>([]);
   const [showFinalizeModal, setShowFinalizeModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
 
   const load = () => {
@@ -109,6 +112,12 @@ export function InvoiceDetail() {
   const handleCancel = async () => {
     await updateInvoiceStatus(invoice.id, "cancelled");
     load();
+  };
+
+  const handleDelete = async () => {
+    await deleteInvoice(invoice.id);
+    setShowDeleteModal(false);
+    navigate("/invoices");
   };
 
   const handleDuplicate = async () => {
@@ -301,6 +310,12 @@ export function InvoiceDetail() {
               Creer un avoir
             </Button>
           </Link>
+        )}
+        {invoice.status === "cancelled" && creditNotes.length === 0 && (
+          <Button variant="danger" size="sm" onClick={() => setShowDeleteModal(true)}>
+            <Trash2 size={16} className="mr-2" />
+            Supprimer
+          </Button>
         )}
       </div>
 
@@ -516,6 +531,26 @@ export function InvoiceDetail() {
             Annuler
           </Button>
           <Button onClick={handleFinalize}>Finaliser</Button>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Supprimer la facture"
+      >
+        <p className="text-sm text-gray-600">
+          Cette action est irréversible. La facture <strong>{invoice.invoiceNumber}</strong> et
+          toutes ses lignes seront définitivement supprimées.
+        </p>
+        <div className="mt-6 flex justify-end gap-3">
+          <Button
+            variant="secondary"
+            onClick={() => setShowDeleteModal(false)}
+          >
+            Annuler
+          </Button>
+          <Button variant="danger" onClick={handleDelete}>Supprimer</Button>
         </div>
       </Modal>
     </div>

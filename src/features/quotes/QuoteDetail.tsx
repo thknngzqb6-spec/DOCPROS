@@ -50,7 +50,6 @@ export function QuoteDetail() {
   const [showConvertModal, setShowConvertModal] = useState(false);
   const [converting, setConverting] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
-
   const load = () => {
     getQuote(Number(id)).then(setQuote);
   };
@@ -66,7 +65,6 @@ export function QuoteDetail() {
 
   const isDraft = quote.status === "draft";
   const canConvert = quote.status === "accepted" && !quote.convertedInvoiceId;
-
   const handleMarkSent = async () => {
     await updateQuoteStatus(quote.id, "sent");
     load();
@@ -408,6 +406,7 @@ export function QuoteDetail() {
           </Button>
         </div>
       </Modal>
+
     </div>
   );
 }

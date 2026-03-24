@@ -309,3 +309,8 @@ export async function updateInvoiceStatus(
     [status, new Date().toISOString(), id]
   );
 }
+
+export async function deleteInvoice(id: number): Promise<void> {
+  const db = await getDb();
+  await db.execute("DELETE FROM invoices WHERE id = $1", [id]);
+}
