@@ -33,9 +33,9 @@ const statusLabels: Record<string, string> = {
 
 export function generateInvoicesCsv(invoices: Invoice[]): string {
   const headers = [
-    "Numero",
-    "Date emission",
-    "Date echeance",
+    "Numéro",
+    "Date émission",
+    "Date échéance",
     "Client",
     "SIRET client",
     "Total HT",

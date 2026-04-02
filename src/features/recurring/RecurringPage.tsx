@@ -252,7 +252,7 @@ export function RecurringPage() {
 
     const totals = calculateDocumentTotals(item.lines);
 
-    const latePenaltyText = `En cas de retard de paiement, une penalite de ${settings.defaultLatePenaltyRate}% sera appliquee, conformement a l'article L.441-10 du Code de commerce.`;
+    const latePenaltyText = `En cas de retard de paiement, une pénalité de ${settings.defaultLatePenaltyRate}% sera appliquée, conformément à l'article L.441-10 du Code de commerce.`;
 
     const created = await createInvoice({
       invoiceNumber,
@@ -279,7 +279,7 @@ export function RecurringPage() {
       latePenaltyRate: settings.defaultLatePenaltyRate,
       latePenaltyText,
       recoveryCostsText:
-        "Indemnite forfaitaire pour frais de recouvrement : 40 EUR",
+        "Indemnité forfaitaire pour frais de recouvrement : 40 EUR",
       notes: item.notes,
       lines: item.lines,
     });

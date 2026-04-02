@@ -33,7 +33,7 @@ export function buildInvoicePdf(
   const legalFooter: string[] = [];
   // Mode de règlement
   const paymentMethods = legalInfo?.paymentMethods || "Virement bancaire";
-  legalFooter.push(`Mode de reglement : ${paymentMethods}.`);
+  legalFooter.push(`Mode de règlement : ${paymentMethods}.`);
   // Coordonnées bancaires
   if (legalInfo?.iban) {
     let bankLine = `IBAN : ${legalInfo.iban}`;
@@ -43,10 +43,10 @@ export function buildInvoicePdf(
     legalFooter.push(bankLine);
   }
   legalFooter.push(
-    `Conditions de paiement : ${invoice.paymentTermsDays} jours. Echeance : ${formatDate(invoice.dueDate)}.`
+    `Conditions de paiement : ${invoice.paymentTermsDays} jours. Échéance : ${formatDate(invoice.dueDate)}.`
   );
   // Escompte (obligatoire)
-  legalFooter.push("Pas d'escompte pour paiement anticipe.");
+  legalFooter.push("Pas d'escompte pour paiement anticipé.");
   legalFooter.push(invoice.latePenaltyText);
   if (invoice.buyerIsProfessional) {
     legalFooter.push(invoice.recoveryCostsText);
@@ -106,11 +106,11 @@ export function buildInvoicePdf(
           {
             width: "*",
             stack: [
-              { text: `Date d'emission : ${formatDate(invoice.issueDate)}`, fontSize: 9 },
+              { text: `Date d'émission : ${formatDate(invoice.issueDate)}`, fontSize: 9 },
               invoice.serviceDate
                 ? { text: `Date de prestation : ${formatDate(invoice.serviceDate)}`, fontSize: 9 }
                 : "",
-              { text: `Echeance : ${formatDate(invoice.dueDate)}`, fontSize: 9 },
+              { text: `Échéance : ${formatDate(invoice.dueDate)}`, fontSize: 9 },
             ],
           },
           {

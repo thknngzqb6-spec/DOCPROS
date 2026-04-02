@@ -115,9 +115,13 @@ export function InvoiceDetail() {
   };
 
   const handleDelete = async () => {
-    await deleteInvoice(invoice.id);
-    setShowDeleteModal(false);
-    navigate("/invoices");
+    try {
+      await deleteInvoice(invoice.id);
+      setShowDeleteModal(false);
+      navigate("/invoices");
+    } catch {
+      alert("Impossible de supprimer cette facture. Elle est probablement liée à une facture récurrente ou un avoir. Veuillez d'abord désactiver la facture récurrente associée.");
+    }
   };
 
   const handleDuplicate = async () => {
@@ -256,67 +260,65 @@ export function InvoiceDetail() {
         </Badge>
       </div>
 
-      <div className="flex gap-3">
-        <Button size="sm" onClick={handleExportPdf}>
-          <Download size={16} className="mr-2" />
+      <div className="flex flex-wrap gap-2">
+        <Button size="xs" onClick={handleExportPdf}>
+          <Download size={14} className="mr-1" />
           Exporter PDF
         </Button>
-        <Button variant="secondary" size="sm" onClick={handleExportFacturx}>
-          <FileCode size={16} className="mr-2" />
+        <Button variant="secondary" size="xs" onClick={handleExportFacturx}>
+          <FileCode size={14} className="mr-1" />
           Factur-X
         </Button>
-        <Button variant="secondary" size="sm" onClick={handleSendEmail}>
-          <Mail size={16} className="mr-2" />
+        <Button variant="secondary" size="xs" onClick={handleSendEmail}>
+          <Mail size={14} className="mr-1" />
           Envoyer par email
         </Button>
         {isDraft && (
           <>
             <Link to={`/invoices/${invoice.id}/edit`}>
-              <Button variant="secondary" size="sm">
-                <Pencil size={16} className="mr-2" />
+              <Button variant="secondary" size="xs">
+                <Pencil size={14} className="mr-1" />
                 Modifier
               </Button>
             </Link>
             <Button
               variant="secondary"
-              size="sm"
+              size="xs"
               onClick={() => setShowFinalizeModal(true)}
             >
-              <Lock size={16} className="mr-2" />
+              <Lock size={14} className="mr-1" />
               Finaliser
             </Button>
           </>
         )}
         {invoice.status === "sent" && (
-          <Button variant="secondary" size="sm" onClick={handleMarkPaid}>
-            <CheckCircle size={16} className="mr-2" />
+          <Button variant="secondary" size="xs" onClick={handleMarkPaid}>
+            <CheckCircle size={14} className="mr-1" />
             Marquer payée
           </Button>
         )}
         {(invoice.status === "sent" || invoice.status === "draft") && (
-          <Button variant="danger" size="sm" onClick={handleCancel}>
-            <XCircle size={16} className="mr-2" />
+          <Button variant="danger" size="xs" onClick={handleCancel}>
+            <XCircle size={14} className="mr-1" />
             Annuler
           </Button>
         )}
-        <Button variant="secondary" size="sm" onClick={handleDuplicate} disabled={duplicating}>
-          <Copy size={16} className="mr-2" />
+        <Button variant="secondary" size="xs" onClick={handleDuplicate} disabled={duplicating}>
+          <Copy size={14} className="mr-1" />
           {duplicating ? "Duplication..." : "Dupliquer"}
         </Button>
         {invoice.type === "invoice" && (invoice.status === "sent" || invoice.status === "paid") && (
           <Link to={`/invoices/${invoice.id}/credit-note`}>
-            <Button variant="secondary" size="sm">
-              <RotateCcw size={16} className="mr-2" />
-              Creer un avoir
+            <Button variant="secondary" size="xs">
+              <RotateCcw size={14} className="mr-1" />
+              Créer un avoir
             </Button>
           </Link>
         )}
-        {invoice.status === "cancelled" && creditNotes.length === 0 && (
-          <Button variant="danger" size="sm" onClick={() => setShowDeleteModal(true)}>
-            <Trash2 size={16} className="mr-2" />
-            Supprimer
-          </Button>
-        )}
+        <Button variant="danger" size="xs" onClick={() => setShowDeleteModal(true)}>
+          <Trash2 size={14} className="mr-1" />
+          Supprimer
+        </Button>
       </div>
 
       {isOverdue && (

@@ -10,6 +10,7 @@ import {
   Send,
   Copy,
   Mail,
+  Trash2,
 } from "lucide-react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { join, downloadDir } from "@tauri-apps/api/path";
@@ -19,7 +20,7 @@ import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import { Modal } from "../../components/ui/Modal";
-import { getQuote, createQuote, updateQuoteStatus } from "../../lib/db/quotes";
+import { getQuote, createQuote, updateQuoteStatus, deleteQuote } from "../../lib/db/quotes";
 import { getClient } from "../../lib/db/clients";
 import { createInvoice } from "../../lib/db/invoices";
 import { getNextInvoiceNumber, getNextQuoteNumber } from "../../lib/db/numbering";
@@ -50,6 +51,7 @@ export function QuoteDetail() {
   const [showConvertModal, setShowConvertModal] = useState(false);
   const [converting, setConverting] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const load = () => {
     getQuote(Number(id)).then(setQuote);
   };
@@ -65,6 +67,13 @@ export function QuoteDetail() {
 
   const isDraft = quote.status === "draft";
   const canConvert = quote.status === "accepted" && !quote.convertedInvoiceId;
+
+  const handleDelete = async () => {
+    await deleteQuote(quote.id);
+    setShowDeleteModal(false);
+    navigate("/quotes");
+  };
+
   const handleMarkSent = async () => {
     await updateQuoteStatus(quote.id, "sent");
     load();
@@ -176,7 +185,7 @@ export function QuoteDetail() {
     const today = toISODate(new Date());
     const dueDate = toISODate(addDays(new Date(), settings.defaultPaymentTermsDays));
 
-    const latePenaltyText = `En cas de retard de paiement, une penalite de ${settings.defaultLatePenaltyRate}% sera appliquee, conformement a l'article L.441-10 du Code de commerce.`;
+    const latePenaltyText = `En cas de retard de paiement, une pénalité de ${settings.defaultLatePenaltyRate}% sera appliquée, conformément à l'article L.441-10 du Code de commerce.`;
 
     await createInvoice({
       invoiceNumber,
@@ -200,7 +209,7 @@ export function QuoteDetail() {
       paymentTermsDays: settings.defaultPaymentTermsDays,
       latePenaltyRate: settings.defaultLatePenaltyRate,
       latePenaltyText,
-      recoveryCostsText: "Indemnite forfaitaire pour frais de recouvrement : 40 EUR",
+      recoveryCostsText: "Indemnité forfaitaire pour frais de recouvrement : 40 EUR",
       notes: quote.notes,
       lines: quote.lines.map((l) => ({
         description: l.description,
@@ -286,6 +295,10 @@ export function QuoteDetail() {
         <Button variant="secondary" size="sm" onClick={handleDuplicate} disabled={duplicating}>
           <Copy size={16} className="mr-2" />
           {duplicating ? "Duplication..." : "Dupliquer"}
+        </Button>
+        <Button variant="danger" size="sm" onClick={() => setShowDeleteModal(true)}>
+          <Trash2 size={16} className="mr-2" />
+          Supprimer
         </Button>
       </div>
 
@@ -395,7 +408,7 @@ export function QuoteDetail() {
       >
         <p className="text-sm text-gray-600">
           Une nouvelle facture sera créée à partir de ce devis avec les mêmes
-          lignes et montants. La date d'emission sera aujourd'hui.
+          lignes et montants. La date d'émission sera aujourd'hui.
         </p>
         <div className="mt-6 flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setShowConvertModal(false)}>
@@ -407,6 +420,25 @@ export function QuoteDetail() {
         </div>
       </Modal>
 
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Supprimer le devis"
+      >
+        <p className="text-sm text-gray-600">
+          Êtes-vous sûr de vouloir supprimer le devis{" "}
+          <span className="font-medium">{quote.quoteNumber}</span> ? Cette
+          action est irréversible.
+        </p>
+        <div className="mt-6 flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            Annuler
+          </Button>
+          <Button variant="danger" onClick={handleDelete}>
+            Supprimer définitivement
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

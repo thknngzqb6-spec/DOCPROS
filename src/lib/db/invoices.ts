@@ -312,5 +312,9 @@ export async function updateInvoiceStatus(
 
 export async function deleteInvoice(id: number): Promise<void> {
   const db = await getDb();
+  // Remove references from credit notes linked to this invoice
+  await db.execute("UPDATE invoices SET linked_invoice_id = NULL WHERE linked_invoice_id = $1", [id]);
+  // Remove references from quotes converted to this invoice
+  await db.execute("UPDATE quotes SET converted_invoice_id = NULL WHERE converted_invoice_id = $1", [id]);
   await db.execute("DELETE FROM invoices WHERE id = $1", [id]);
 }

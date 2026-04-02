@@ -75,7 +75,7 @@ export function buildQuotePdf(
           {
             width: "*",
             stack: [
-              { text: `Date d'emission : ${formatDate(quote.issueDate)}`, fontSize: 9 },
+              { text: `Date d'émission : ${formatDate(quote.issueDate)}`, fontSize: 9 },
               { text: `Valable jusqu'au : ${formatDate(quote.validityDate)}`, fontSize: 9, bold: true },
             ],
           },

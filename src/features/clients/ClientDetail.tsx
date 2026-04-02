@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { ArrowLeft, Pencil, FileText, FilePlus2 } from "lucide-react";
+import { ArrowLeft, Pencil, FileText, FilePlus2, Trash2 } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
-import { getClient } from "../../lib/db/clients";
+import { getClient, hardDeleteClient } from "../../lib/db/clients";
+import { Modal } from "../../components/ui/Modal";
 import { getInvoicesByClientId } from "../../lib/db/invoices";
 import { getQuotesByClientId } from "../../lib/db/quotes";
 import { formatCurrency } from "../../lib/utils/formatCurrency";
@@ -39,6 +40,7 @@ export function ClientDetail() {
   const [client, setClient] = useState<Client | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     const clientId = Number(id);
@@ -59,6 +61,11 @@ export function ClientDetail() {
 
   const paidInvoices = invoices.filter((i) => i.status === "paid");
   const totalCa = paidInvoices.reduce((sum, i) => sum + i.totalTtc, 0);
+  const handleDelete = async () => {
+    await hardDeleteClient(client.id);
+    setShowDeleteModal(false);
+    navigate("/clients");
+  };
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -83,6 +90,10 @@ export function ClientDetail() {
             Modifier
           </Button>
         </Link>
+        <Button variant="danger" size="sm" onClick={() => setShowDeleteModal(true)}>
+          <Trash2 size={16} className="mr-2" />
+          Supprimer
+        </Button>
       </div>
 
       {/* Stats */}
@@ -157,7 +168,7 @@ export function ClientDetail() {
             <Link to="/invoices/new">
               <Button variant="secondary" size="sm">
                 <FileText size={16} className="mr-2" />
-                Creer une facture
+                Créer une facture
               </Button>
             </Link>
           </div>
@@ -199,7 +210,7 @@ export function ClientDetail() {
             <Link to="/quotes/new">
               <Button variant="secondary" size="sm">
                 <FilePlus2 size={16} className="mr-2" />
-                Creer un devis
+                Créer un devis
               </Button>
             </Link>
           </div>
@@ -232,6 +243,26 @@ export function ClientDetail() {
           </div>
         )}
       </Card>
+
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Supprimer le client"
+      >
+        <p className="text-sm text-gray-600">
+          Êtes-vous sûr de vouloir supprimer{" "}
+          <span className="font-medium">{getClientDisplayName(client)}</span> ?
+          Cette action est irréversible.
+        </p>
+        <div className="mt-6 flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            Annuler
+          </Button>
+          <Button variant="danger" onClick={handleDelete}>
+            Supprimer définitivement
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

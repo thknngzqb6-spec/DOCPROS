@@ -58,42 +58,52 @@
         <div class="hero-actions">
           <a href="#download" class="btn btn-lg">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Télécharger gratuitement
+            Télécharger
           </a>
           <a href="#features" class="btn btn-outline btn-lg">Découvrir</a>
         </div>
         <p class="hero-note">Windows 10/11 - Installation en 30 secondes - Pas de compte requis</p>
       </div>
       <div class="hero-visual">
-        <div class="hero-stats">
-          <div class="hero-stat-card">
-            <span class="hero-stat-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            </span>
-            <span class="hero-stat-number">∞</span>
-            <span class="hero-stat-label">Factures & devis</span>
+        <img src="screenshot-dashboard.png" alt="Tableau de bord DocPro" class="hero-screenshot">
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots -->
+  <section class="screenshots">
+    <div class="container">
+      <div class="section-header">
+        <h2>Aperçu de l'application</h2>
+        <p>Une interface claire et intuitive pour gérer votre activité au quotidien.</p>
+      </div>
+      <div class="screenshots-carousel">
+        <div class="carousel-track">
+          <div class="screenshot-card active" data-index="0">
+            <img src="screenshot-factures.png" alt="Liste des factures DocPro">
+            <p>Gestion des factures</p>
           </div>
-          <div class="hero-stat-card">
-            <span class="hero-stat-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            </span>
-            <span class="hero-stat-number">100%</span>
-            <span class="hero-stat-label">Données privées</span>
+          <div class="screenshot-card" data-index="1">
+            <img src="screenshot-devis.png" alt="Liste des devis DocPro">
+            <p>Gestion des devis</p>
           </div>
-          <div class="hero-stat-card">
-            <span class="hero-stat-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            </span>
-            <span class="hero-stat-number">✓</span>
-            <span class="hero-stat-label">Conforme FR</span>
+          <div class="screenshot-card" data-index="2">
+            <img src="screenshot-pdf.png" alt="Export PDF facture DocPro">
+            <p>Export PDF professionnel</p>
           </div>
-          <div class="hero-stat-card">
-            <span class="hero-stat-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            </span>
-            <span class="hero-stat-number">~4 Mo</span>
-            <span class="hero-stat-label">Léger & rapide</span>
+        </div>
+        <div class="carousel-controls">
+          <button class="carousel-btn carousel-prev" aria-label="Précédent">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="carousel-dots">
+            <button class="carousel-dot active" data-index="0"></button>
+            <button class="carousel-dot" data-index="1"></button>
+            <button class="carousel-dot" data-index="2"></button>
           </div>
+          <button class="carousel-btn carousel-next" aria-label="Suivant">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
         </div>
       </div>
     </div>
@@ -568,6 +578,25 @@
     window.addEventListener('scroll', () => {
       nav.classList.toggle('scrolled', window.scrollY > 20);
     });
+
+    // Screenshots carousel
+    const cards = document.querySelectorAll('.screenshot-card');
+    const dots = document.querySelectorAll('.carousel-dot');
+    let currentSlide = 0;
+
+    function showSlide(index) {
+      cards.forEach(c => c.classList.remove('active'));
+      dots.forEach(d => d.classList.remove('active'));
+      currentSlide = (index + cards.length) % cards.length;
+      cards[currentSlide].classList.add('active');
+      dots[currentSlide].classList.add('active');
+    }
+
+    document.querySelector('.carousel-prev').addEventListener('click', () => showSlide(currentSlide - 1));
+    document.querySelector('.carousel-next').addEventListener('click', () => showSlide(currentSlide + 1));
+    dots.forEach(dot => dot.addEventListener('click', () => showSlide(Number(dot.dataset.index))));
+
+    setInterval(() => showSlide(currentSlide + 1), 5000);
   </script>
 
 </body>
