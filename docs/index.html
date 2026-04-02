@@ -18,6 +18,15 @@
   <meta name="twitter:description" content="Créez vos devis et factures en quelques clics. 100% local, sans abonnement.">
   <meta name="twitter:image" content="https://thknngzqb6-spec.github.io/DOCPROS/og-image.png">
   <link rel="stylesheet" href="style.css">
+  <script>
+    // Apply dark mode before paint to avoid flash
+    (function() {
+      var s = localStorage.getItem('docpro-theme');
+      if (s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -36,6 +45,10 @@
         <a href="#pricing">Tarif</a>
         <a href="#faq">FAQ</a>
         <a href="#download" class="btn btn-sm">Télécharger</a>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Changer de thème">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
       </div>
       <button class="nav-toggle" aria-label="Menu">
         <span></span>
@@ -48,7 +61,7 @@
   <!-- Hero -->
   <section class="hero">
     <div class="container">
-      <div class="hero-content">
+      <div class="hero-content reveal-left">
         <div class="hero-badge">Logiciel de facturation français</div>
         <h1>Créez vos devis et factures <span class="text-gradient">en quelques clics</span></h1>
         <p class="hero-subtitle">
@@ -64,7 +77,7 @@
         </div>
         <p class="hero-note">Windows 10/11 - Installation en 30 secondes - Pas de compte requis</p>
       </div>
-      <div class="hero-visual">
+      <div class="hero-visual reveal-right">
         <img src="screenshot-dashboard.png" alt="Tableau de bord DocPro" class="hero-screenshot">
       </div>
     </div>
@@ -73,11 +86,11 @@
   <!-- Screenshots -->
   <section class="screenshots">
     <div class="container">
-      <div class="section-header">
+      <div class="section-header reveal">
         <h2>Aperçu de l'application</h2>
         <p>Une interface claire et intuitive pour gérer votre activité au quotidien.</p>
       </div>
-      <div class="screenshots-carousel">
+      <div class="screenshots-carousel reveal">
         <div class="carousel-track">
           <div class="screenshot-card active" data-index="0">
             <img src="screenshot-factures.png" alt="Liste des factures DocPro">
@@ -112,75 +125,75 @@
   <!-- Features -->
   <section id="features" class="features">
     <div class="container">
-      <div class="section-header">
+      <div class="section-header reveal">
         <h2>Tout ce dont vous avez besoin</h2>
         <p>Un logiciel complet pour gérer votre facturation au quotidien</p>
       </div>
       <div class="features-grid">
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="feature-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
           </div>
           <h3>Devis & Factures</h3>
           <p>Créez des devis professionnels et convertissez-les en factures en un clic. Numérotation automatique conforme.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="feature-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
           <h3>Gestion clients</h3>
           <p>Centralisez votre base clients avec leurs informations (SIRET, adresse, contact) pour facturer plus vite.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="feature-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
           </div>
           <h3>Tableau de bord</h3>
           <p>Visualisez votre chiffre d'affaires, vos factures en attente et vos statistiques en un coup d'œil.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="feature-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           </div>
           <h3>Données locales</h3>
           <p>Vos données restent sur votre ordinateur. Pas de cloud, pas de compte, pas de tracking. 100% privé.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="feature-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           </div>
           <h3>Export PDF</h3>
           <p>Exportez vos devis et factures en PDF professionnels avec votre logo et vos mentions légales.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="feature-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           </div>
           <h3>Suivi des paiements</h3>
           <p>Suivez le statut de vos factures : brouillon, envoyée, payée ou en retard. Ne perdez plus rien.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="feature-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           </div>
           <h3>Conforme</h3>
           <p>Mentions légales obligatoires, TVA, pénalités de retard, indemnité de recouvrement. Tout est inclus.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="feature-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
           </div>
           <h3>Sauvegarde & Export</h3>
           <p>Exportez vos données en CSV, sauvegardez et restaurez votre base de données en un clic.</p>
         </div>
-        <div class="feature-card feature-card-highlight">
+        <div class="feature-card feature-card-highlight reveal">
           <div class="feature-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
           </div>
           <h3>Export FEC</h3>
           <p>Générez votre Fichier des Écritures Comptables au format normé, prêt pour l'administration fiscale.</p>
         </div>
-        <div class="feature-card feature-card-highlight">
+        <div class="feature-card feature-card-highlight reveal">
           <div class="feature-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/><path d="M10 12l2 2 4-4"/></svg>
           </div>
@@ -194,28 +207,28 @@
   <!-- How it works -->
   <section class="how-it-works">
     <div class="container">
-      <div class="section-header">
+      <div class="section-header reveal">
         <h2>Simple comme bonjour</h2>
         <p>Prêt à facturer en 3 étapes</p>
       </div>
       <div class="steps">
-        <div class="step">
+        <div class="step reveal reveal-delay-1">
           <div class="step-number">1</div>
           <h3>Installez</h3>
           <p>Téléchargez et installez DocPro en 30 secondes. Aucun compte requis.</p>
         </div>
-        <div class="step-arrow">
+        <div class="step-arrow reveal reveal-delay-1">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </div>
-        <div class="step">
+        <div class="step reveal reveal-delay-2">
           <div class="step-number">2</div>
           <h3>Configurez</h3>
           <p>Renseignez vos informations (nom, SIRET, adresse) en quelques secondes.</p>
         </div>
-        <div class="step-arrow">
+        <div class="step-arrow reveal reveal-delay-2">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </div>
-        <div class="step">
+        <div class="step reveal reveal-delay-3">
           <div class="step-number">3</div>
           <h3>Facturez</h3>
           <p>Créez votre premier devis ou facture et exportez-le en PDF.</p>
@@ -227,12 +240,12 @@
   <!-- Testimonials -->
   <section class="testimonials">
     <div class="container">
-      <div class="section-header">
+      <div class="section-header reveal">
         <h2>Ils utilisent DocPro</h2>
         <p>Retours d'expérience d'indépendants comme vous</p>
       </div>
       <div class="testimonials-grid">
-        <div class="testimonial-card">
+        <div class="testimonial-card reveal reveal-delay-1">
           <div class="testimonial-stars">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -249,7 +262,7 @@
             </div>
           </div>
         </div>
-        <div class="testimonial-card">
+        <div class="testimonial-card reveal reveal-delay-2">
           <div class="testimonial-stars">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -266,7 +279,7 @@
             </div>
           </div>
         </div>
-        <div class="testimonial-card">
+        <div class="testimonial-card reveal reveal-delay-3">
           <div class="testimonial-stars">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -290,12 +303,12 @@
   <!-- Pricing -->
   <section id="pricing" class="pricing">
     <div class="container">
-      <div class="section-header">
+      <div class="section-header reveal">
         <h2>Un prix simple et transparent</h2>
         <p>Pas d'abonnement, pas de frais cachés</p>
       </div>
       <div class="pricing-cards">
-        <div class="pricing-card">
+        <div class="pricing-card reveal">
           <div class="pricing-header">
             <h3>Licence unique</h3>
             <div class="price">
@@ -353,11 +366,11 @@
   <!-- Comparatif -->
   <section class="compare">
     <div class="container">
-      <div class="section-header">
+      <div class="section-header reveal">
         <h2>Pourquoi choisir DocPro ?</h2>
         <p>Comparez avec les logiciels de facturation en ligne</p>
       </div>
-      <div class="compare-table-wrapper">
+      <div class="compare-table-wrapper reveal">
         <table class="compare-table">
           <thead>
             <tr>
@@ -450,10 +463,10 @@
   <!-- FAQ -->
   <section id="faq" class="faq">
     <div class="container">
-      <div class="section-header">
+      <div class="section-header reveal">
         <h2>Questions fréquentes</h2>
       </div>
-      <div class="faq-list">
+      <div class="faq-list reveal">
         <details class="faq-item">
           <summary>DocPro est-il conforme à la législation française ?</summary>
           <p>Oui. DocPro inclut toutes les mentions légales obligatoires sur les factures : numéro SIRET, TVA, pénalités de retard, indemnité de recouvrement, et numérotation séquentielle conforme.</p>
@@ -501,7 +514,7 @@
   <!-- Download / CTA -->
   <section id="download" class="download">
     <div class="container">
-      <div class="download-card">
+      <div class="download-card reveal">
         <h2>Prêt à simplifier votre facturation ?</h2>
         <p>Téléchargez DocPro et créez votre première facture en moins de 5 minutes.</p>
         <div class="download-actions">
@@ -551,7 +564,27 @@
     </div>
   </footer>
 
+  <!-- Floating CTA -->
+  <div class="floating-cta" id="floating-cta">
+    <a href="#download">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Télécharger
+    </a>
+  </div>
+
   <script>
+    // Theme toggle (dark mode)
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('docpro-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('docpro-theme', 'dark');
+      }
+    });
+
     // Mobile menu toggle
     const toggle = document.querySelector('.nav-toggle');
     const links = document.querySelector('.nav-links');
@@ -597,6 +630,32 @@
     dots.forEach(dot => dot.addEventListener('click', () => showSlide(Number(dot.dataset.index))));
 
     setInterval(() => showSlide(currentSlide + 1), 5000);
+
+    // Scroll reveal animations
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => {
+      revealObserver.observe(el);
+    });
+
+    // Floating CTA - show after hero, hide near download section
+    const floatingCta = document.getElementById('floating-cta');
+    const heroSection = document.querySelector('.hero');
+    const downloadSection = document.getElementById('download');
+
+    window.addEventListener('scroll', () => {
+      const heroBottom = heroSection.getBoundingClientRect().bottom;
+      const downloadTop = downloadSection.getBoundingClientRect().top;
+      const show = heroBottom < 0 && downloadTop > window.innerHeight;
+      floatingCta.classList.toggle('visible', show);
+    });
   </script>
 
 </body>
