@@ -28,9 +28,9 @@ import type { Client } from "../../types/client";
 interface LineDraft {
   key: string;
   description: string;
-  quantity: number;
+  quantity: number | string;
   unit: string;
-  unitPriceHt: number;
+  unitPriceHt: number | string;
   vatRate: number;
 }
 
@@ -148,7 +148,7 @@ export function InvoiceForm() {
 
   const computedLines = lines.map((l) => ({
     ...l,
-    ...calculateLineTotal(l.quantity, l.unitPriceHt, l.vatRate),
+    ...calculateLineTotal(Number(l.quantity) || 0, Number(l.unitPriceHt) || 0, l.vatRate),
   }));
   const totals = calculateDocumentTotals(computedLines);
   const dueDate = toISODate(addDays(new Date(issueDate), paymentTermsDays));
@@ -232,9 +232,9 @@ export function InvoiceForm() {
       linkedInvoiceId: isCreditNote && id ? Number(id) : null,
       lines: computedLines.map((l, i) => ({
         description: l.description,
-        quantity: l.quantity,
+        quantity: Number(l.quantity) || 0,
         unit: l.unit,
-        unitPriceHt: l.unitPriceHt,
+        unitPriceHt: Number(l.unitPriceHt) || 0,
         vatRate: l.vatRate,
         totalHt: l.totalHt,
         totalVat: l.totalVat,
@@ -336,6 +336,9 @@ export function InvoiceForm() {
                     type="number"
                     value={line.quantity}
                     onChange={(e) =>
+                      updateLine(line.key, "quantity", e.target.value)
+                    }
+                    onBlur={(e) =>
                       updateLine(line.key, "quantity", parseFloat(e.target.value) || 0)
                     }
                     className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
@@ -363,11 +366,10 @@ export function InvoiceForm() {
                     type="number"
                     value={line.unitPriceHt}
                     onChange={(e) =>
-                      updateLine(
-                        line.key,
-                        "unitPriceHt",
-                        parseFloat(e.target.value) || 0
-                      )
+                      updateLine(line.key, "unitPriceHt", e.target.value)
+                    }
+                    onBlur={(e) =>
+                      updateLine(line.key, "unitPriceHt", parseFloat(e.target.value) || 0)
                     }
                     className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
                     min="0"

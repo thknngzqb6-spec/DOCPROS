@@ -482,6 +482,49 @@ body {
 }
 
 /* ========================================
+   Trust Banner
+   ======================================== */
+
+.trust-banner {
+  padding: 40px 0;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.trust-items {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-600);
+  white-space: nowrap;
+}
+
+.trust-item svg {
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .trust-items {
+    gap: 20px 32px;
+    justify-content: flex-start;
+  }
+
+  .trust-item {
+    font-size: 13px;
+  }
+}
+
+/* ========================================
    Screenshots
    ======================================== */
 
@@ -656,6 +699,67 @@ body {
 .testimonial-role {
   font-size: 0.8rem;
   color: var(--gray-400);
+}
+
+/* ========================================
+   Stats Counters
+   ======================================== */
+
+.stats-section {
+  padding: 80px 0;
+  background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+}
+
+.stat-block {
+  text-align: center;
+  padding: 24px 16px;
+}
+
+.stat-value {
+  font-size: 48px;
+  font-weight: 800;
+  color: white;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.stat-unit {
+  font-size: 24px;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.stat-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 4px;
+}
+
+.stat-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .stat-value {
+    font-size: 36px;
+  }
+
+  .stat-unit {
+    font-size: 18px;
+  }
 }
 
 /* ========================================
@@ -1608,4 +1712,16 @@ body {
 
 [data-theme="dark"] .legal-back {
   border-top-color: #334155;
+}
+
+[data-theme="dark"] .trust-banner {
+  border-bottom-color: #334155;
+}
+
+[data-theme="dark"] .trust-item svg {
+  color: #34d399;
+}
+
+[data-theme="dark"] .stats-section {
+  background: linear-gradient(135deg, #312e81 0%, #4c1d95 100%);
 }

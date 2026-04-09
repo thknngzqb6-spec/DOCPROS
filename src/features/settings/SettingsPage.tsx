@@ -596,7 +596,8 @@ export function SettingsPage() {
               label="Quantité"
               type="number"
               value={templateForm.quantity}
-              onChange={(e) => setTemplateForm((f) => ({ ...f, quantity: parseFloat(e.target.value) || 0 }))}
+              onChange={(e) => setTemplateForm((f) => ({ ...f, quantity: e.target.value as unknown as number }))}
+              onBlur={(e) => setTemplateForm((f) => ({ ...f, quantity: parseFloat(e.target.value) || 0 }))}
               min="0"
               step="0.5"
             />
@@ -617,7 +618,8 @@ export function SettingsPage() {
               label="Prix unitaire HT (€)"
               type="number"
               value={templateForm.unitPriceHt}
-              onChange={(e) => setTemplateForm((f) => ({ ...f, unitPriceHt: parseFloat(e.target.value) || 0 }))}
+              onChange={(e) => setTemplateForm((f) => ({ ...f, unitPriceHt: e.target.value as unknown as number }))}
+              onBlur={(e) => setTemplateForm((f) => ({ ...f, unitPriceHt: parseFloat(e.target.value) || 0 }))}
               min="0"
               step="0.01"
             />
