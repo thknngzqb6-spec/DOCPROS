@@ -15,18 +15,28 @@ import { SettingsPage } from "./features/settings/SettingsPage";
 import { RecurringPage } from "./features/recurring/RecurringPage";
 import { OnboardingWizard } from "./features/onboarding/OnboardingWizard";
 import { CguAcceptanceScreen } from "./features/cgu/CguAcceptanceScreen";
+import { LicenseActivationScreen } from "./features/license/LicenseActivationScreen";
 import { useSettingsStore } from "./stores/useSettingsStore";
+import { getLicense } from "./lib/db/license";
 import "./index.css";
 
 function AppContent() {
   const { settings, loadSettings } = useSettingsStore();
   const [isReady, setIsReady] = useState(false);
+  const [isLicensed, setIsLicensed] = useState<boolean | null>(null);
 
   useEffect(() => {
-    loadSettings()
-      .then(() => setIsReady(true))
+    Promise.all([
+      loadSettings(),
+      getLicense(),
+    ])
+      .then(([, license]) => {
+        setIsLicensed(!!license);
+        setIsReady(true);
+      })
       .catch((err) => {
         console.error("Failed to load settings:", err);
+        setIsLicensed(false);
         setIsReady(true);
       });
   }, [loadSettings]);
@@ -39,6 +49,13 @@ function AppContent() {
           <p className="text-gray-500">Chargement...</p>
         </div>
       </div>
+    );
+  }
+
+  // Check license first
+  if (!isLicensed) {
+    return (
+      <LicenseActivationScreen onActivated={() => setIsLicensed(true)} />
     );
   }
 

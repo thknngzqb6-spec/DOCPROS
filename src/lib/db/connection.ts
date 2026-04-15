@@ -168,6 +168,12 @@ const MIGRATIONS = [
   "ALTER TABLE invoices ADD COLUMN type TEXT NOT NULL DEFAULT 'invoice'",
   "ALTER TABLE invoices ADD COLUMN linked_invoice_id INTEGER REFERENCES invoices(id)",
   "ALTER TABLE settings ADD COLUMN credit_note_prefix TEXT NOT NULL DEFAULT 'AV'",
+  `CREATE TABLE IF NOT EXISTS license (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    token TEXT NOT NULL,
+    email TEXT NOT NULL,
+    activated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
   `CREATE TABLE IF NOT EXISTS recurring_invoices (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,

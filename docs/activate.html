@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activation de licence - DocPro</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function() {
+      var s = localStorage.getItem('docpro-theme');
+      if (s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .activate-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, var(--primary-light) 0%, var(--white) 100%);
+      padding: 24px;
+    }
+    .activate-card {
+      background: white;
+      border-radius: 16px;
+      padding: 48px 40px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+    }
+    .activate-logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      background: var(--primary);
+      color: white;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 28px;
+      margin-bottom: 24px;
+    }
+    .activate-card h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--gray-900);
+      margin-bottom: 12px;
+    }
+    .activate-card p {
+      color: var(--gray-500);
+      line-height: 1.7;
+      margin-bottom: 0;
+    }
+    .activate-status {
+      margin: 32px 0;
+      padding: 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .activate-status.loading {
+      background: var(--gray-100);
+      color: var(--gray-600);
+    }
+    .activate-status.success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .activate-status.error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .activate-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--gray-300);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .activate-note {
+      font-size: 13px;
+      color: var(--gray-400);
+      margin-top: 24px;
+    }
+    .activate-note a { color: var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="activate-page">
+    <div class="activate-card">
+      <div class="activate-logo">D</div>
+      <h1 id="title">Activation de votre licence</h1>
+      <p id="subtitle">Ouverture de DocPro en cours...</p>
+
+      <div class="activate-status loading" id="status">
+        <span class="activate-spinner"></span>
+        Activation en cours...
+      </div>
+
+      <div id="download-hint" style="display:none;">
+        <a href="/#download" class="btn btn-lg" style="width:100%; justify-content:center;">
+          Télécharger DocPro d'abord
+        </a>
+      </div>
+
+      <p class="activate-note">
+        Des problèmes ? <a href="mailto:contact@getdocpro.fr">contact@getdocpro.fr</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    const statusEl = document.getElementById('status');
+    const titleEl = document.getElementById('title');
+    const subtitleEl = document.getElementById('subtitle');
+    const downloadHint = document.getElementById('download-hint');
+
+    function showSuccess() {
+      statusEl.className = 'activate-status success';
+      statusEl.innerHTML = '✓ Licence activée avec succès !';
+      titleEl.textContent = 'DocPro est activé';
+      subtitleEl.textContent = 'Vous pouvez fermer cette page et utiliser DocPro.';
+    }
+
+    function showError(msg) {
+      statusEl.className = 'activate-status error';
+      statusEl.innerHTML = '✗ ' + msg;
+      titleEl.textContent = 'Activation échouée';
+      subtitleEl.textContent = 'Contactez-nous à contact@getdocpro.fr si le problème persiste.';
+    }
+
+    function showNotInstalled() {
+      statusEl.className = 'activate-status error';
+      statusEl.innerHTML = '✗ DocPro ne semble pas installé.';
+      titleEl.textContent = 'DocPro non détecté';
+      subtitleEl.textContent = 'Téléchargez et installez DocPro, puis revenez cliquer sur le lien de votre email.';
+      downloadHint.style.display = 'block';
+    }
+
+    if (!token) {
+      showError('Lien d\'activation invalide.');
+    } else {
+      // Try to open docpro:// deep link
+      const deepLink = 'docpro://activate?token=' + encodeURIComponent(token);
+      window.location.href = deepLink;
+
+      // After 3 seconds, check if app opened
+      // If still on page, app might not be installed
+      setTimeout(() => {
+        // If page is still visible, app didn't open
+        if (!document.hidden) {
+          showNotInstalled();
+        }
+      }, 3000);
+
+      // Listen for app confirmation via localStorage (app sets this)
+      const checkInterval = setInterval(() => {
+        if (localStorage.getItem('docpro-activated') === token) {
+          clearInterval(checkInterval);
+          showSuccess();
+        }
+      }, 500);
+
+      // Stop checking after 30 seconds
+      setTimeout(() => clearInterval(checkInterval), 30000);
+    }
+  </script>
+</body>
+</html>

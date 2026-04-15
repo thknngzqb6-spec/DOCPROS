@@ -21,6 +21,14 @@
       "csp": null
     }
   },
+  "plugins": {
+    "deep-link": {
+      "mobile": [],
+      "desktop": {
+        "schemes": ["docpro"]
+      }
+    }
+  },
   "bundle": {
     "active": true,
     "targets": ["nsis"],
