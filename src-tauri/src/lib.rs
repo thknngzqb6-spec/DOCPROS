@@ -8,10 +8,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_http::init())
-        .plugin(
-            tauri_plugin_deep_link::Builder::new()
-                .build(),
-        )
+        .plugin(tauri_plugin_deep_link::init())
         .setup(|app| {
             #[cfg(desktop)]
             {
@@ -22,9 +19,7 @@ pub fn run() {
                 app.deep_link().on_open_url(move |event| {
                     let urls = event.urls();
                     if let Some(url) = urls.first() {
-                        let url_str = url.to_string();
-                        // Emit event to frontend with the full URL
-                        let _ = handle.emit("deep-link", url_str);
+                        let _ = handle.emit("deep-link", url.to_string());
                     }
                 });
             }
