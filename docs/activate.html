@@ -103,15 +103,22 @@
     <div class="activate-card">
       <div class="activate-logo">D</div>
       <h1 id="title">Activation de votre licence</h1>
-      <p id="subtitle">Ouverture de DocPro en cours...</p>
+      <p id="subtitle">Cliquez sur le bouton ci-dessous pour ouvrir DocPro et activer votre licence.</p>
 
-      <div class="activate-status loading" id="status">
+      <div class="activate-status loading" id="status" style="display:none;">
         <span class="activate-spinner"></span>
         Activation en cours...
       </div>
 
-      <div id="download-hint" style="display:none;">
-        <a href="/#download" class="btn btn-lg" style="width:100%; justify-content:center;">
+      <div id="open-btn" style="margin: 24px 0;">
+        <button onclick="openDocPro()" class="btn btn-lg" style="width:100%; justify-content:center; cursor:pointer; border:none;">
+          Ouvrir DocPro et activer →
+        </button>
+      </div>
+
+      <div id="download-hint" style="display:none; margin-top: 16px;">
+        <p style="color: var(--gray-500); font-size: 14px; margin-bottom: 12px;">DocPro ne s'est pas ouvert ?</p>
+        <a href="/#download" class="btn btn-lg" style="width:100%; justify-content:center; background: var(--gray-100); color: var(--gray-700);">
           Télécharger DocPro d'abord
         </a>
       </div>
@@ -155,21 +162,26 @@
 
     if (!token) {
       showError('Lien d\'activation invalide.');
-    } else {
-      // Try to open docpro:// deep link
+      document.getElementById('open-btn').style.display = 'none';
+    }
+
+    function openDocPro() {
       const deepLink = 'docpro://activate?token=' + encodeURIComponent(token);
+      document.getElementById('open-btn').style.display = 'none';
+      document.getElementById('status').style.display = 'block';
+
+      // Open the deep link
       window.location.href = deepLink;
 
-      // After 3 seconds, check if app opened
-      // If still on page, app might not be installed
+      // After 4 seconds, if page still visible, app probably not installed
       setTimeout(() => {
-        // If page is still visible, app didn't open
         if (!document.hidden) {
-          showNotInstalled();
+          document.getElementById('status').style.display = 'none';
+          document.getElementById('download-hint').style.display = 'block';
         }
-      }, 3000);
+      }, 4000);
 
-      // Listen for app confirmation via localStorage (app sets this)
+      // Listen for app confirmation via localStorage
       const checkInterval = setInterval(() => {
         if (localStorage.getItem('docpro-activated') === token) {
           clearInterval(checkInterval);
@@ -177,7 +189,6 @@
         }
       }, 500);
 
-      // Stop checking after 30 seconds
       setTimeout(() => clearInterval(checkInterval), 30000);
     }
   </script>
