@@ -15,6 +15,20 @@ pub fn run() {
                 use tauri_plugin_deep_link::DeepLinkExt;
                 app.deep_link().register_all()?;
 
+                // Check if app was launched via deep link (cold start)
+                if let Ok(Some(urls)) = app.deep_link().get_current() {
+                    if let Some(url) = urls.first() {
+                        let handle = app.handle().clone();
+                        let url_str = url.to_string();
+                        // Delay to let frontend load first
+                        std::thread::spawn(move || {
+                            std::thread::sleep(std::time::Duration::from_millis(1500));
+                            let _ = handle.emit("deep-link", url_str);
+                        });
+                    }
+                }
+
+                // Also handle deep links when app is already running
                 let handle = app.handle().clone();
                 app.deep_link().on_open_url(move |event| {
                     let urls = event.urls();

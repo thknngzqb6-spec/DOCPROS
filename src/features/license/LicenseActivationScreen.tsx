@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
-import { fetch } from "@tauri-apps/plugin-http";
 import { saveLicense } from "../../lib/db/license";
 
 interface Props {
@@ -9,7 +8,7 @@ interface Props {
 
 type Status = "waiting" | "activating" | "success" | "error";
 
-const VERCEL_URL = "https://docpro-license.vercel.app";
+const VERCEL_URL = "https://docpros.vercel.app";
 
 export function LicenseActivationScreen({ onActivated }: Props) {
   const [status, setStatus] = useState<Status>("waiting");
@@ -40,7 +39,7 @@ export function LicenseActivationScreen({ onActivated }: Props) {
   async function activateToken(token: string) {
     setStatus("activating");
     try {
-      const response = await fetch(`${VERCEL_URL}/api/validate`, {
+      const response = await window.fetch(`${VERCEL_URL}/api/validate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),

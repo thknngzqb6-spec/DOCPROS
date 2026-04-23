@@ -12,6 +12,8 @@
     "dialog:allow-save",
     "dialog:allow-open",
     "fs:allow-read-text-file",
+    "http:default",
+    "deep-link:default",
     {
       "identifier": "fs:allow-write-text-file",
       "allow": [{ "path": "**" }]
